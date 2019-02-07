@@ -4,6 +4,7 @@
 #include "type-safety/Angle.hpp"
 
 using namespace type_safety;
+using namespace type_safety::angle_literals;
 
 namespace /* anonymous */ {
 

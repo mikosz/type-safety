@@ -107,6 +107,8 @@ private:
 
 constexpr auto PI = Angle{piFactorTag, 1.0f};
 
+namespace angle_literals {
+
 constexpr Angle operator""_deg(long double d) {
     return Angle{degreesTag, static_cast<float>(d)};
 }
@@ -118,5 +120,7 @@ constexpr Angle operator""_rad(long double r) {
 constexpr Angle operator""_pi(long double piFactor) {
     return Angle{piFactorTag, static_cast<float>(piFactor)};
 }
+
+} // namespace angle_literals
 
 } // namespace type_safety
