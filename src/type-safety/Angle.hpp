@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <iosfwd>
 
 #include "config.hpp"
 
@@ -95,6 +96,10 @@ public:
         return Angle{radiansTag, -a.radians_};
     }
 
+    friend std::ostream& operator<<(std::ostream& os, Angle a) {
+        return os << a.degrees() << "_deg";
+    }
+
 private:
 
     static constexpr auto PI_ = 3.141592f;
@@ -113,11 +118,23 @@ constexpr Angle operator""_deg(long double d) {
     return Angle{degreesTag, static_cast<float>(d)};
 }
 
+constexpr Angle operator""_deg(unsigned long long d) {
+    return Angle{degreesTag, static_cast<float>(d)};
+}
+
 constexpr Angle operator""_rad(long double r) {
     return Angle{radiansTag, static_cast<float>(r)};
 }
 
+constexpr Angle operator""_rad(unsigned long long r) {
+    return Angle{radiansTag, static_cast<float>(r)};
+}
+
 constexpr Angle operator""_pi(long double piFactor) {
+    return Angle{piFactorTag, static_cast<float>(piFactor)};
+}
+
+constexpr Angle operator""_pi(unsigned long long piFactor) {
     return Angle{piFactorTag, static_cast<float>(piFactor)};
 }
 
