@@ -13,9 +13,9 @@ TEST(AngleTest, CreateFromDegrees) {
     constexpr auto angleFromConstructor = Angle{degreesTag, degrees};
     constexpr auto angleFromLiteral = 123.45_deg;
 
-    EXPECT_FLOAT_EQ(angleFromConstructor.degrees(), degrees);
-    EXPECT_FLOAT_EQ(angleFromConstructor.radians(), radians);
-    EXPECT_FLOAT_EQ(angleFromLiteral.degrees(), degrees);
+    static_assert(floatEq(angleFromConstructor.degrees(), degrees));
+    static_assert(floatEq(angleFromConstructor.radians(), radians));
+    static_assert(floatEq(angleFromLiteral.degrees(), degrees));
 }
 
 TEST(AngleTest, CreateFromRadians) {
@@ -24,9 +24,41 @@ TEST(AngleTest, CreateFromRadians) {
     constexpr auto angleFromConstructor = Angle{radiansTag, radians};
     constexpr auto angleFromLiteral = 2.154609_rad;
 
-    EXPECT_FLOAT_EQ(angleFromConstructor.radians(), radians);
-    EXPECT_FLOAT_EQ(angleFromConstructor.degrees(), degrees);
-    EXPECT_FLOAT_EQ(angleFromLiteral.radians(), radians);
+    static_assert(floatEq(angleFromConstructor.radians(), radians));
+    static_assert(floatEq(angleFromConstructor.degrees(), degrees));
+    static_assert(floatEq(angleFromLiteral.radians(), radians));
+}
+
+TEST(AngleTest, CreateFromPiFactor) {
+    constexpr auto radians = 3.141592f * 0.5f;
+    constexpr auto degrees = 90.0f;
+    constexpr auto angleFromConstructor = Angle{piFactorTag, 0.5f};
+    constexpr auto angleFromLiteral = 0.5_pi;
+
+    static_assert(floatEq(angleFromConstructor.radians(), radians));
+    static_assert(floatEq(angleFromConstructor.degrees(), degrees));
+    static_assert(floatEq(angleFromLiteral.radians(), radians));
+}
+
+TEST(AngleTest, AngleArithmetics) {
+    static_assert(42.0_deg == 42.0_deg);
+    static_assert(42.0_deg != 42.1_deg);
+    
+    static_assert(42.0_deg < 42.1_deg);
+    static_assert(!(42.1_deg < 42.0_deg));
+    static_assert(42.0_deg <= 42.1_deg);
+    static_assert(42.0_deg <= 42.0_deg);
+    static_assert(!(42.1_deg <= 42.0_deg));
+
+    static_assert(42.1_deg > 42.0_deg);
+    static_assert(!(42.0_deg > 42.1_deg));
+    static_assert(42.1_deg >= 42.0_deg);
+    static_assert(42.0_deg >= 42.0_deg);
+    static_assert(!(42.0_deg >= 42.1_deg));
+
+    static_assert(42.0_deg + 1.0_deg == 43.0_deg);
+    static_assert(42.0_deg - 1.0_deg == 41.0_deg);
+    static_assert(-42.0_deg == -(42.0_deg));
 }
 
 } // anonymous namespace
