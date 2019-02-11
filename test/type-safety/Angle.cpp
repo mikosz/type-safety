@@ -38,7 +38,7 @@ TEST(AngleTest, CreateFromRadians) {
 }
 
 TEST(AngleTest, CreateFromPiFactor) {
-    constexpr auto radians = 3.141592f * 0.5f;
+    constexpr auto radians = PI * 0.5f;
     constexpr auto degrees = 90.0f;
     constexpr auto angleFromConstructor = Angle{piFactorTag, 0.5f};
     constexpr auto angleFromLiteral = 0.5_pi;

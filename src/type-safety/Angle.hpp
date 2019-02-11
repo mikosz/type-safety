@@ -3,7 +3,7 @@
 #include <utility>
 #include <iosfwd>
 
-#include "config.hpp"
+#include "math.hpp"
 
 namespace type_safety {
 
@@ -22,6 +22,8 @@ struct DegreesTag {
 };
 constexpr const auto degreesTag = DegreesTag{};
 
+constexpr auto PI = 3.141592f;
+
 class Angle final {
 public:
 
@@ -33,7 +35,7 @@ public:
     }
 
     constexpr Angle(PiFactorTag, float piFactor) :
-        radians_(piFactor * PI_)
+        radians_(piFactor * PI)
     {
     }
 
@@ -102,39 +104,36 @@ public:
 
 private:
 
-    static constexpr auto PI_ = 3.141592f;
-    static constexpr auto DEGREES_TO_RADIANS_ = PI_ / 180.0f;
-    static constexpr auto RADIANS_TO_DEGREES_ = 180.0f / PI_;
+    static constexpr auto DEGREES_TO_RADIANS_ = PI / 180.0f;
+    static constexpr auto RADIANS_TO_DEGREES_ = 180.0f / PI;
 
     float radians_ = 0.0f;
 
 };
 
-constexpr auto PI = Angle{piFactorTag, 1.0f};
-
 namespace angle_literals {
 
-constexpr Angle operator""_deg(long double d) {
+inline constexpr Angle operator""_deg(long double d) {
     return Angle{degreesTag, static_cast<float>(d)};
 }
 
-constexpr Angle operator""_deg(unsigned long long d) {
+inline constexpr Angle operator""_deg(unsigned long long d) {
     return Angle{degreesTag, static_cast<float>(d)};
 }
 
-constexpr Angle operator""_rad(long double r) {
+inline constexpr Angle operator""_rad(long double r) {
     return Angle{radiansTag, static_cast<float>(r)};
 }
 
-constexpr Angle operator""_rad(unsigned long long r) {
+inline constexpr Angle operator""_rad(unsigned long long r) {
     return Angle{radiansTag, static_cast<float>(r)};
 }
 
-constexpr Angle operator""_pi(long double piFactor) {
+inline constexpr Angle operator""_pi(long double piFactor) {
     return Angle{piFactorTag, static_cast<float>(piFactor)};
 }
 
-constexpr Angle operator""_pi(unsigned long long piFactor) {
+inline constexpr Angle operator""_pi(unsigned long long piFactor) {
     return Angle{piFactorTag, static_cast<float>(piFactor)};
 }
 
