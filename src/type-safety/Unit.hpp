@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ratio>
+
 #include "math.hpp"
 
 namespace type_safety {
@@ -7,49 +9,43 @@ namespace type_safety {
 namespace detail {
 
 template <
-    int EXP_PARAM,
     int RAD_EXP_PARAM,
     int M_EXP_PARAM,
-    int KG_EXP_PARAM,
+    int TO_KILOGRAMS_RATIO_NUM_PARAM,
+    int TO_KILOGRAMS_RATIO_DEN_PARAM,
+	int KG_EXP_PARAM,
     int S_EXP_PARAM
 >
 struct Unit final {
 
-    static constexpr auto EXP = EXP_PARAM;
     static constexpr auto RAD_EXP = RAD_EXP_PARAM;
     static constexpr auto M_EXP = M_EXP_PARAM;
+	using TO_KG_RATIO = std::ratio<TO_KILOGRAMS_RATIO_NUM_PARAM, TO_KILOGRAMS_RATIO_DEN_PARAM>;
     static constexpr auto KG_EXP = KG_EXP_PARAM;
     static constexpr auto S_EXP = S_EXP_PARAM;
 
     template <class OtherUnitT>
-    static constexpr auto IS_CONVERTIBLE_TO =
-        RAD_EXP == OtherUnitT::RAD_EXP
-        && M_EXP == OtherUnitT::M_EXP
-        && KG_EXP == OtherUnitT::KG_EXP
+	static constexpr auto IS_CONVERTIBLE_TO =
+		RAD_EXP == OtherUnitT::RAD_EXP
+		&& M_EXP == OtherUnitT::M_EXP
+		&& KG_EXP == OtherUnitT::KG_EXP
         && S_EXP == OtherUnitT::S_EXP
         ;
 
     template <class OtherUnitT>
-    static constexpr auto CONVERSION_FACTOR = pow<OtherUnitT::EXP - EXP>(10.0f);
+    using CONVERSION_RATIO =
+		std::ratio_divide<typename OtherUnitT::TO_KG_RATIO, TO_KG_RATIO>
+		;
 
 };
 
 } // namespace detail
 
-template <int EXP>
-using AngleUnit = detail::Unit<EXP, 1, 0, 0, 0>;
+template <int NUM, int DEN>
+using MassUnit = detail::Unit<0, 0, NUM, DEN, 1, 0>;
 
-template <int EXP>
-using DistanceUnit = detail::Unit<EXP, 0, 1, 0, 0>;
-
-template <int EXP>
-using MassUnit = detail::Unit<EXP, 0, 0, 1, 0>;
-
-using Kilograms = MassUnit<0>;
-using Grams = MassUnit<-3>;
-
-template <int EXP>
-using TimeUnit = detail::Unit<EXP, 0, 0, 0, 1>;
+using Kilograms = MassUnit<1, 1>;
+using Grams = MassUnit<1000, 1>;
 
 template <class UnitType>
 class Value final {
@@ -73,11 +69,11 @@ public:
     template <class CompatibleUnitT>
     constexpr float value() const {
         static_assert(Unit::IS_CONVERTIBLE_TO<CompatibleUnitT>);
-        constexpr const auto FACTOR = CompatibleUnitT::CONVERSION_FACTOR<Unit>;
-        if constexpr (FACTOR == 1) {
+        using RATIO = Unit::CONVERSION_RATIO<CompatibleUnitT>;
+        if constexpr (std::ratio_equal_v<RATIO, std::ratio<1, 1>>) {
             return value_;
         } else {
-			return static_cast<float>(FACTOR) * value_;
+			return (static_cast<float>(RATIO::num) / static_cast<float>(RATIO::den)) * value_;
         }
     }
 

@@ -8,7 +8,8 @@ using namespace type_safety::unit_literals;
 
 namespace /* anonymous */ {
 
-using Tonnes = MassUnit<3>;
+using Tonnes = MassUnit<1, 1000>;
+using Pounds = MassUnit<100000, 45359>;
 
 TEST(UnitTest, CompatibleTypeConversion) {
     constexpr auto mass = Value<Kilograms>{2.1f};
@@ -27,6 +28,9 @@ TEST(UnitTest, CompatibleTypeConversion) {
 	static_assert(floatEq(gs.value<Tonnes>(), 0.0021f));
 	static_assert(floatEq(gs.value<Kilograms>(), 2.1f));
 	static_assert(floatEq(gs.value<Grams>(), 2100.0f));
+
+	constexpr auto lbs = Value<Pounds>{2.2046f};
+	static_assert(floatEq(lbs.value<Kilograms>(), 1.0f));
 }
 
 TEST(UnitTest, LiteralsCreation) {
