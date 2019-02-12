@@ -85,7 +85,7 @@ public:
         return Angle{std::move(lhs)} += rhs;
     }
 
-    constexpr Angle& operator-=(const Angle& a) {
+    constexpr Angle& operator-=(Angle a) {
         radians_ -= a.radians_;
         return *this;
     }

@@ -11,7 +11,19 @@ namespace /* anonymous */ {
 using Tonnes = MassUnit<1, 1000>;
 using Pounds = MassUnit<100000, 45359>;
 
-TEST(UnitTest, CompatibleTypeConversion) {
+TEST(UnitTest, DistanceCompatibleTypeConversion) {
+    constexpr auto distance = Value<Metres>{2.1f};
+
+	constexpr auto ms = Value<Metres>{distance};
+    static_assert(floatEq(ms.value<Kilometres>(), 0.0021f));
+    static_assert(floatEq(ms.value<Metres>(), 2.1f));
+
+	constexpr auto kms = Value<Kilometres>{distance};
+    static_assert(floatEq(kms.value<Kilometres>(), 0.0021f));
+    static_assert(floatEq(kms.value<Metres>(), 2.1f));
+}
+
+TEST(UnitTest, MassCompatibleTypeConversion) {
     constexpr auto mass = Value<Kilograms>{2.1f};
 
 	constexpr auto kgs = Value<Kilograms>{mass};
@@ -33,12 +45,80 @@ TEST(UnitTest, CompatibleTypeConversion) {
 	static_assert(floatEq(lbs.value<Kilograms>(), 1.0f));
 }
 
+TEST(UnitTest, TimeCompatibleTypeConversion) {
+    constexpr auto time = Value<Seconds>{2.1f};
+
+	constexpr auto secs = Value<Hours>{time};
+    static_assert(floatEq(secs.value<Hours>(), 2.1f / (60.0f * 60.0f)));
+    static_assert(floatEq(secs.value<Minutes>(), 2.1f / 60.0f));
+    static_assert(floatEq(secs.value<Seconds>(), 2.1f));
+    static_assert(floatEq(secs.value<Milliseconds>(), 2100.0f));
+
+	constexpr auto minutes = Value<Hours>{time};
+    static_assert(floatEq(minutes.value<Hours>(), 2.1f / (60.0f * 60.0f)));
+    static_assert(floatEq(minutes.value<Minutes>(), 2.1f / 60.0f));
+    static_assert(floatEq(minutes.value<Seconds>(), 2.1f));
+    static_assert(floatEq(minutes.value<Milliseconds>(), 2100.0f));
+
+	constexpr auto hours = Value<Hours>{time};
+    static_assert(floatEq(hours.value<Hours>(), 2.1f / (60.0f * 60.0f)));
+    static_assert(floatEq(hours.value<Minutes>(), 2.1f / 60.0f));
+    static_assert(floatEq(hours.value<Seconds>(), 2.1f));
+    static_assert(floatEq(hours.value<Milliseconds>(), 2100.0f));
+
+	constexpr auto millis = Value<Hours>{time};
+    static_assert(floatEq(millis.value<Hours>(), 2.1f / (60.0f * 60.0f)));
+    static_assert(floatEq(millis.value<Minutes>(), 2.1f / 60.0f));
+    static_assert(floatEq(millis.value<Seconds>(), 2.1f));
+    static_assert(floatEq(millis.value<Milliseconds>(), 2100.0f));
+}
+
 TEST(UnitTest, LiteralsCreation) {
 	static_assert(floatEq((4.2_kg).value<Kilograms>(), 4.2f));
 	static_assert(floatEq((4_kg).value<Kilograms>(), 4.0f));
 
 	static_assert(floatEq((4.2_g).value<Grams>(), 4.2f));
 	static_assert(floatEq((4_g).value<Grams>(), 4.0f));
+}
+
+TEST(UnitTest, MassValueMultiplication) {
+	constexpr auto threeKg = 3.0_kg;
+	constexpr auto twoG = 2.0_g;
+	constexpr auto threeG = 3.0_g;
+
+	using GKg = decltype(Grams{} * Kilograms{});
+	static_assert(GKg::RAD_EXP == 0);
+	static_assert(std::ratio_equal_v<GKg::TO_M_RATIO, std::ratio<1, 1>>);
+	static_assert(GKg::M_EXP == 0);
+	static_assert(std::ratio_equal_v<GKg::TO_KG_RATIO, Grams::TO_KG_RATIO>);
+	static_assert(GKg::KG_EXP == 2);
+	static_assert(std::ratio_equal_v<GKg::TO_S_RATIO, std::ratio<1, 1>>);
+	static_assert(GKg::S_EXP == 0);
+
+	using GramsSq = decltype(Grams{} * Grams{});
+	static_assert(GramsSq::RAD_EXP == 0);
+	static_assert(std::ratio_equal_v<GramsSq::TO_M_RATIO, std::ratio<1, 1>>);
+	static_assert(GramsSq::M_EXP == 0);
+	static_assert(
+		std::ratio_equal_v<
+			GramsSq::TO_KG_RATIO,
+			std::ratio_multiply<Grams::TO_KG_RATIO, Grams::TO_KG_RATIO>
+		>
+	);
+	static_assert(GramsSq::KG_EXP == 2);
+	static_assert(std::ratio_equal_v<GramsSq::TO_S_RATIO, std::ratio<1, 1>>);
+	static_assert(GramsSq::S_EXP == 0);
+
+	constexpr auto sixThousandGSq = threeKg * twoG;
+	static_assert(std::is_same_v<std::decay_t<decltype(sixThousandGSq)>, Value<GKg>>);
+	static_assert(floatEq(sixThousandGSq.value<GramsSq>(), 6000.0f));
+	static_assert(floatEq(sixThousandGSq.value<GKg>(), 6.0f));
+	static_assert(floatEq(sixThousandGSq.value<decltype(Kilograms{} * Kilograms{})>(), 0.006f));
+
+	constexpr auto sixGSq = threeG * twoG;
+	static_assert(std::is_same_v<std::decay_t<decltype(sixGSq)>, Value<GramsSq>>);
+	static_assert(floatEq(sixGSq.value<GramsSq>(), 6.0f));
+	static_assert(floatEq(sixGSq.value<decltype(Kilograms{} * Kilograms{})> (), 0.000006f));
 }
 
 } // anonymous namespace
