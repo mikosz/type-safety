@@ -8,8 +8,8 @@ using namespace type_safety::unit_literals;
 
 namespace /* anonymous */ {
 
-using Tonnes = MassUnit<1, 1000>;
-using Pounds = MassUnit<100000, 45359>;
+using Tonnes = MassUnit<1000, 1>;
+using Pounds = MassUnit<45359, 100000>;
 
 TEST(UnitTest, DistanceCompatibleTypeConversion) {
     constexpr auto distance = Value<Metres>{2.1f};
@@ -81,10 +81,47 @@ TEST(UnitTest, LiteralsCreation) {
 	static_assert(floatEq((4_g).value<Grams>(), 4.0f));
 }
 
+TEST(UnitTest, ValueAddition) {
+	constexpr auto sum = 3_kg + 2_g;
+	static_assert(std::is_same_v<std::decay_t<decltype(sum)>, Value<Kilograms>>);
+	static_assert(floatEq(sum.value<Kilograms>(), 3.002f));
+
+	auto sumEq = 3_kg;
+	sumEq += 2_g;
+	EXPECT_FLOAT_EQ(sumEq.value<Kilograms>(), 3.002f);
+}
+
+TEST(UnitTest, ValueNegation) {
+	static_assert(floatEq(-(3_kg).value<Kilograms>(), -3.0f));
+	static_assert(floatEq((-3_kg).value<Kilograms>(), -3.0f));
+	static_assert(floatEq(-(3.0_kg).value<Kilograms>(), -3.0f));
+	static_assert(floatEq((-3.0_kg).value<Kilograms>(), -3.0f));
+}
+
+TEST(UnitTest, ValueSubtraction) {
+	constexpr auto diff = 3_kg - 2_g;
+	static_assert(std::is_same_v<std::decay_t<decltype(diff)>, Value<Kilograms>>);
+	static_assert(floatEq(diff.value<Kilograms>(), 2.998f));
+
+	auto diffEq = 3_kg;
+	diffEq -= 2_g;
+	EXPECT_FLOAT_EQ(diffEq.value<Kilograms>(), 2.998f);
+}
+
+TEST(UnitTest, ValueMultiplicationByUnitless) {
+	constexpr auto sixKg = 3_kg * Value<Unitless>{2.0f};
+	static_assert(std::is_same_v<std::decay_t<decltype(sixKg)>, Value<Kilograms>>);
+	static_assert(floatEq(sixKg.value<Kilograms>(), 6.0f));
+
+	auto threeTimesTwoKg = 3_kg;
+	threeTimesTwoKg *= Value<Unitless>{2.0f};
+	EXPECT_FLOAT_EQ(threeTimesTwoKg.value<Kilograms>(), sixKg.value<Kilograms>());
+}
+
 TEST(UnitTest, MassValueMultiplication) {
-	constexpr auto threeKg = 3.0_kg;
-	constexpr auto twoG = 2.0_g;
-	constexpr auto threeG = 3.0_g;
+	constexpr auto threeKg = 3_kg;
+	constexpr auto twoG = 2_g;
+	constexpr auto threeG = 3_g;
 
 	using GKg = decltype(Grams{} * Kilograms{});
 	static_assert(GKg::RAD_EXP == 0);
@@ -119,6 +156,24 @@ TEST(UnitTest, MassValueMultiplication) {
 	static_assert(std::is_same_v<std::decay_t<decltype(sixGSq)>, Value<GramsSq>>);
 	static_assert(floatEq(sixGSq.value<GramsSq>(), 6.0f));
 	static_assert(floatEq(sixGSq.value<decltype(Kilograms{} * Kilograms{})> (), 0.000006f));
+}
+
+TEST(UnitTest, ValueDivisionByUnitless) {
+	constexpr auto twoKg = 4_kg / Value<Unitless>{2.0f};
+	static_assert(std::is_same_v<std::decay_t<decltype(twoKg)>, Value<Kilograms>>);
+	static_assert(floatEq(twoKg.value<Kilograms>(), 2.0f));
+
+	auto fourDivTwoKg = 4_kg;
+	fourDivTwoKg /= Value<Unitless>{2.0f};
+	EXPECT_FLOAT_EQ(fourDivTwoKg.value<Kilograms>(), twoKg.value<Kilograms>());
+}
+
+TEST(UnitTest, MassValueDivision) {
+	constexpr auto fourKg = 4_kg;
+	constexpr auto twoG = 2_g;
+
+	constexpr auto twoThousand = fourKg / twoG;
+	static_assert(floatEq(twoThousand.value<Unitless>(), 2000.0f));
 }
 
 } // anonymous namespace

@@ -39,12 +39,12 @@ struct Unit final {
         ;
 
     template <class OtherUnitT>
-    using CONVERSION_RATIO =
+    using ConversionRatio =
 		std::ratio_multiply<
-			std::ratio_divide<typename OtherUnitT::TO_M_RATIO, TO_M_RATIO>,
+			std::ratio_divide<TO_M_RATIO, typename OtherUnitT::TO_M_RATIO>,
 			std::ratio_multiply<
-				std::ratio_divide<typename OtherUnitT::TO_KG_RATIO, TO_KG_RATIO>,
-				std::ratio_divide<typename OtherUnitT::TO_S_RATIO, TO_S_RATIO>
+				std::ratio_divide<TO_KG_RATIO, typename OtherUnitT::TO_KG_RATIO>,
+				std::ratio_divide<TO_S_RATIO, typename OtherUnitT::TO_S_RATIO>
 			>
 		>
 		;
@@ -67,6 +67,22 @@ struct Unit final {
 		>{};
 	}
 
+	template <class OtherUnitT>
+	constexpr auto operator/(OtherUnitT) const {
+		return Unit<
+			RAD_EXP - OtherUnitT::RAD_EXP,
+			TO_M_RATIO::num * OtherUnitT::TO_M_RATIO::den,
+			TO_M_RATIO::den * OtherUnitT::TO_M_RATIO::num,
+			M_EXP - OtherUnitT::M_EXP,
+			TO_KG_RATIO::num * OtherUnitT::TO_KG_RATIO::den,
+			TO_KG_RATIO::den * OtherUnitT::TO_KG_RATIO::num,
+			KG_EXP - OtherUnitT::KG_EXP,
+			TO_S_RATIO::num * OtherUnitT::TO_S_RATIO::den,
+			TO_S_RATIO::den * OtherUnitT::TO_S_RATIO::num,
+			S_EXP - OtherUnitT::S_EXP
+		>{};
+	}
+
 };
 
 } // namespace detail
@@ -76,22 +92,22 @@ using Unitless = detail::Unit<0, 1, 1, 0, 1, 1, 0, 1, 1, 0>;
 template <int NUM, int DEN>
 using DistanceUnit = detail::Unit<0, NUM, DEN, 1, 1, 1, 0, 1, 1, 0>;
 
-using Metres = DistanceUnit<1, 1>;
-using Kilometres = DistanceUnit<1, 1000>;
-
 template <int NUM, int DEN>
 using MassUnit = detail::Unit<0, 1, 1, 0, NUM, DEN, 1, 1, 1, 0>;
-
-using Kilograms = MassUnit<1, 1>;
-using Grams = MassUnit<1000, 1>;
 
 template <int NUM, int DEN>
 using TimeUnit = detail::Unit<0, 1, 1, 0, 1, 1, 0, NUM, DEN, 1>;
 
-using Milliseconds = TimeUnit<1000, 1>;
+using Metres = DistanceUnit<1, 1>;
+using Kilometres = DistanceUnit<1000, 1>;
+
+using Kilograms = MassUnit<1, 1>;
+using Grams = MassUnit<1, 1000>;
+
+using Milliseconds = TimeUnit<1, 1000>;
 using Seconds = TimeUnit<1, 1>;
-using Minutes = TimeUnit<1, 60>;
-using Hours = TimeUnit<1, 60 * 60>;
+using Minutes = TimeUnit<60, 1>;
+using Hours = TimeUnit<60 * 60, 1>;
 
 template <class UnitType>
 class Value final {
@@ -115,13 +131,41 @@ public:
     template <class CompatibleUnitT>
     constexpr float value() const {
         static_assert(Unit::IS_CONVERTIBLE_TO<CompatibleUnitT>);
-        using RATIO = Unit::CONVERSION_RATIO<CompatibleUnitT>;
-        if constexpr (std::ratio_equal_v<RATIO, std::ratio<1, 1>>) {
+        using Ratio = Unit::ConversionRatio<CompatibleUnitT>;
+        if constexpr (std::ratio_equal_v<Ratio, std::ratio<1, 1>>) {
             return value_;
         } else {
-			return (static_cast<float>(RATIO::num) / static_cast<float>(RATIO::den)) * value_;
+			return (static_cast<float>(Ratio::num) / static_cast<float>(Ratio::den)) * value_;
         }
     }
+
+	template <class CompatibleUnitT>
+	constexpr Value& operator+=(Value<CompatibleUnitT> other) {
+		value_ += other.value<Unit>();
+		return *this;
+	}
+
+	template <class CompatibleUnitT>
+	friend constexpr Value operator+(Value lhs, Value<CompatibleUnitT> rhs) {
+		lhs += rhs;
+		return lhs;
+	}
+
+	constexpr Value operator-() const {
+		return Value{-value_};
+	}
+
+	template <class CompatibleUnitT>
+	constexpr Value& operator-=(Value<CompatibleUnitT> other) {
+		value_ -= other.value<Unit>();
+		return *this;
+	}
+
+	template <class CompatibleUnitT>
+	friend constexpr Value operator-(Value lhs, Value<CompatibleUnitT> rhs) {
+		lhs -= rhs;
+		return lhs;
+	}
 
 	constexpr Value& operator*=(Value<Unitless> unitless) {
 		value_ *= unitless.value<Unitless>();
@@ -132,6 +176,17 @@ public:
 	friend constexpr auto operator*(Value lhs, Value<OtherUnit> rhs) {
 		using UnitProduct = decltype(decltype(lhs)::Unit{} * decltype(rhs)::Unit{});
 		return Value<UnitProduct>{lhs.value_ * rhs.value<OtherUnit>()};
+	}
+
+	constexpr Value& operator/=(Value<Unitless> unitless) {
+		value_ /= unitless.value<Unitless>();
+		return *this;
+	}
+
+	template <class OtherUnit>
+	friend constexpr auto operator/(Value lhs, Value<OtherUnit> rhs) {
+		using UnitQuotient = decltype(decltype(lhs)::Unit{} / decltype(rhs)::Unit{});
+		return Value<UnitQuotient>{lhs.value_ / rhs.value<OtherUnit>()};
 	}
 
 private:
