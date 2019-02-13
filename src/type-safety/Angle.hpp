@@ -1,7 +1,7 @@
 #pragma once
 
 #include <utility>
-#include <iosfwd>
+#include <iostream>
 
 #include "math.hpp"
 
