@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ratio>
+#include <iosfwd>
 
 #include "math.hpp"
 
@@ -82,6 +83,10 @@ using RatioOne = std::ratio<1>;
 
 using Unitless = detail::Unit<0, RatioOne, 0, RatioOne, 0, RatioOne, 0>;
 
+std::ostream& operator<<(std::ostream& os, Unitless) {
+	return os << "Unitless";
+}
+
 template <class ToKgRatio>
 using DistanceUnit = detail::Unit<0, ToKgRatio, 1, RatioOne, 0, RatioOne, 0>;
 
@@ -94,18 +99,66 @@ using TimeUnit = detail::Unit<0, RatioOne, 0, RatioOne, 0, ToSRatio, 1>;
 using Metres = DistanceUnit<RatioOne>;
 using Kilometres = DistanceUnit<std::kilo>;
 
+std::ostream& operator<<(std::ostream& os, Metres) {
+	return os << "m";
+}
+
+std::ostream& operator<<(std::ostream& os, Kilometres) {
+	return os << "km";
+}
+
 using Kilograms = MassUnit<RatioOne>;
 using Grams = MassUnit<std::milli>;
+
+std::ostream& operator<<(std::ostream& os, Kilograms) {
+	return os << "kg";
+}
+
+std::ostream& operator<<(std::ostream& os, Grams) {
+	return os << "g";
+}
 
 using Milliseconds = TimeUnit<std::milli>;
 using Seconds = TimeUnit<RatioOne>;
 using Minutes = TimeUnit<std::ratio<60>>;
 using Hours = TimeUnit<std::ratio<60 * 60>>;
 
+std::ostream& operator<<(std::ostream& os, Milliseconds) {
+	return os << "ms";
+}
+
+std::ostream& operator<<(std::ostream& os, Seconds) {
+	return os << "s";
+}
+
+std::ostream& operator<<(std::ostream& os, Minutes) {
+	return os << "min";
+}
+
+std::ostream& operator<<(std::ostream& os, Hours) {
+	return os << "h";
+}
+
 using MPS = decltype(Metres{} / Seconds{});
 using KPH = decltype(Kilometres{} / Hours{});
 using MPS2 = decltype(MPS{} / Seconds{});
 using Newtons = decltype(Kilograms{} * MPS2{});
+
+std::ostream& operator<<(std::ostream& os, MPS) {
+	return os << "m/s";
+}
+
+std::ostream& operator<<(std::ostream& os, KPH) {
+	return os << "km/h";
+}
+
+std::ostream& operator<<(std::ostream& os, MPS2) {
+	return os << "m/s2";
+}
+
+std::ostream& operator<<(std::ostream& os, Newtons) {
+	return os << "N";
+}
 
 template <class UnitType>
 class Value final {
@@ -136,6 +189,36 @@ public:
 			return (static_cast<float>(Ratio::num) / static_cast<float>(Ratio::den)) * value_;
         }
     }
+
+	template <class CompatibleUnitT>
+	friend constexpr bool operator==(Value lhs, Value<CompatibleUnitT> rhs) {
+		return floatEq(lhs.value_, rhs.value<Unit>());
+	}
+
+	template <class CompatibleUnitT>
+	friend constexpr bool operator!=(Value lhs, Value<CompatibleUnitT> rhs) {
+		return floatNE(lhs.value_, rhs.value<Unit>());
+	}
+
+	template <class CompatibleUnitT>
+	friend constexpr bool operator<(Value lhs, Value<CompatibleUnitT> rhs) {
+		return floatLT(lhs.value_, rhs.value<Unit>());
+	}
+
+	template <class CompatibleUnitT>
+	friend constexpr bool operator<=(Value lhs, Value<CompatibleUnitT> rhs) {
+		return floatLE(lhs.value_, rhs.value<Unit>());
+	}
+
+	template <class CompatibleUnitT>
+	friend constexpr bool operator>(Value lhs, Value<CompatibleUnitT> rhs) {
+		return floatGT(lhs.value_, rhs.value<Unit>());
+	}
+
+	template <class CompatibleUnitT>
+	friend constexpr bool operator>=(Value lhs, Value<CompatibleUnitT> rhs) {
+		return floatGE(lhs.value_, rhs.value<Unit>());
+	}
 
 	template <class CompatibleUnitT>
 	constexpr Value& operator+=(Value<CompatibleUnitT> other) {
@@ -185,6 +268,10 @@ public:
 	friend constexpr auto operator/(Value lhs, Value<OtherUnit> rhs) {
 		using UnitQuotient = decltype(decltype(lhs)::Unit{} / decltype(rhs)::Unit{});
 		return Value<UnitQuotient>{lhs.value_ / rhs.value<OtherUnit>()};
+	}
+
+	friend std::ostream& operator<<(std::ostream& os, Value value) {
+		return os << value.value_ << "_" << Unit{};
 	}
 
 private:

@@ -206,4 +206,67 @@ TEST(UnitTest, MassValueDivision) {
 	static_assert(floatEq(twoThousand.value<Unitless>(), 2000.0f));
 }
 
+TEST(UnitTest, PrintsValuesWithUnitSuffix) {
+	auto oss = std::ostringstream{};
+
+	oss << Value<Unitless>{42.0f} << '\n'
+		<< 42_m << '\n'
+		<< 42_km << '\n'
+		<< 42_ms << '\n'
+		<< 42_s << '\n'
+		<< 42_min << '\n'
+		<< 42_h << '\n'
+		<< 42_mps << '\n'
+		<< 42_kph << '\n'
+		<< 42_mps2 << '\n'
+		<< 42_N << '\n'
+		;
+
+	EXPECT_EQ(
+		oss.str(),
+		"42_Unitless\n"
+			"42_m\n"
+			"42_km\n"
+			"42_ms\n"
+			"42_s\n"
+			"42_min\n"
+			"42_h\n"
+			"42_m/s\n"
+			"42_km/h\n"
+			"42_m/s2\n"
+			"42_N\n"
+	);
+}
+
+TEST(UnitTest, ComplexUnitConstruction) {
+	constexpr auto force = 1_kg * 1_m / 1_s / 1_s;
+	static_assert(std::is_same_v<std::decay_t<decltype(force)>, Force>);
+	static_assert(floatEq(force.value<Newtons>(), (1_N).value<Newtons>()));
+}
+
+TEST(UnitTest, ValueComparison) {
+	static_assert(2_N == 2_N);
+	static_assert(2_N == 1_N + 1_N);
+	static_assert(!(1_N == 2_N));
+
+	static_assert(1_N != 2_N);
+	static_assert(!(1_N != 1_N));
+
+	static_assert(1_N < 2_N);
+	static_assert(!(1_N < 1_N));
+	static_assert(!(2_N < 1_N));
+
+	static_assert(1_N <= 2_N);
+	static_assert(2_N <= 2_N);
+	static_assert(!(2_N <= 1_N));
+
+	static_assert(3_N > 2_N);
+	static_assert(!(3_N > 3_N));
+	static_assert(!(2_N > 3_N));
+
+	static_assert(3_N >= 2_N);
+	static_assert(2_N >= 2_N);
+	static_assert(!(2_N >= 3_N));
+}
+
 } // anonymous namespace
