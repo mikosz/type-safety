@@ -10,24 +10,21 @@ namespace detail {
 
 template <
     int RAD_EXP_PARAM,
-	int TO_METRES_RATIO_NUM_PARAM,
-	int TO_METRES_RATIO_DEN_PARAM,
+	class TO_M_RATIO_PARAM,
     int M_EXP_PARAM,
-    int TO_KILOGRAMS_RATIO_NUM_PARAM,
-    int TO_KILOGRAMS_RATIO_DEN_PARAM,
+    class TO_KG_RATIO_PARAM,
 	int KG_EXP_PARAM,
-	int TO_SECONDS_RATIO_NUM_PARAM,
-	int TO_SECONDS_RATIO_DEN_PARAM,
+	class TO_S_RATIO_PARAM,
 	int S_EXP_PARAM
 >
 struct Unit final {
 
     static constexpr auto RAD_EXP = RAD_EXP_PARAM;
-	using TO_M_RATIO = std::ratio<TO_METRES_RATIO_NUM_PARAM, TO_METRES_RATIO_DEN_PARAM>;
+	using TO_M_RATIO = TO_M_RATIO_PARAM;
     static constexpr auto M_EXP = M_EXP_PARAM;
-	using TO_KG_RATIO = std::ratio<TO_KILOGRAMS_RATIO_NUM_PARAM, TO_KILOGRAMS_RATIO_DEN_PARAM>;
+	using TO_KG_RATIO = TO_KG_RATIO_PARAM;
     static constexpr auto KG_EXP = KG_EXP_PARAM;
-	using TO_S_RATIO = std::ratio<TO_SECONDS_RATIO_NUM_PARAM, TO_SECONDS_RATIO_DEN_PARAM>;
+	using TO_S_RATIO = TO_S_RATIO_PARAM;
     static constexpr auto S_EXP = S_EXP_PARAM;
 
     template <class OtherUnitT>
@@ -55,14 +52,11 @@ struct Unit final {
 	constexpr auto operator*(OtherUnitT) const {
 		return Unit<
 			RAD_EXP + OtherUnitT::RAD_EXP,
-			TO_M_RATIO::num * OtherUnitT::TO_M_RATIO::num,
-			TO_M_RATIO::den * OtherUnitT::TO_M_RATIO::den,
+			std::ratio_multiply<TO_M_RATIO, OtherUnitT::TO_M_RATIO>,
 			M_EXP + OtherUnitT::M_EXP,
-			TO_KG_RATIO::num * OtherUnitT::TO_KG_RATIO::num,
-			TO_KG_RATIO::den * OtherUnitT::TO_KG_RATIO::den,
+			std::ratio_multiply<TO_KG_RATIO, OtherUnitT::TO_KG_RATIO>,
 			KG_EXP + OtherUnitT::KG_EXP,
-			TO_S_RATIO::num * OtherUnitT::TO_S_RATIO::num,
-			TO_S_RATIO::den * OtherUnitT::TO_S_RATIO::den,
+			std::ratio_multiply<TO_S_RATIO, OtherUnitT::TO_S_RATIO>,
 			S_EXP + OtherUnitT::S_EXP
 		>{};
 	}
@@ -71,14 +65,11 @@ struct Unit final {
 	constexpr auto operator/(OtherUnitT) const {
 		return Unit<
 			RAD_EXP - OtherUnitT::RAD_EXP,
-			TO_M_RATIO::num * OtherUnitT::TO_M_RATIO::den,
-			TO_M_RATIO::den * OtherUnitT::TO_M_RATIO::num,
+			std::ratio_divide<TO_M_RATIO, OtherUnitT::TO_M_RATIO>,
 			M_EXP - OtherUnitT::M_EXP,
-			TO_KG_RATIO::num * OtherUnitT::TO_KG_RATIO::den,
-			TO_KG_RATIO::den * OtherUnitT::TO_KG_RATIO::num,
+			std::ratio_divide<TO_KG_RATIO, OtherUnitT::TO_KG_RATIO>,
 			KG_EXP - OtherUnitT::KG_EXP,
-			TO_S_RATIO::num * OtherUnitT::TO_S_RATIO::den,
-			TO_S_RATIO::den * OtherUnitT::TO_S_RATIO::num,
+			std::ratio_divide<TO_S_RATIO, OtherUnitT::TO_S_RATIO>,
 			S_EXP - OtherUnitT::S_EXP
 		>{};
 	}
@@ -87,27 +78,34 @@ struct Unit final {
 
 } // namespace detail
 
-using Unitless = detail::Unit<0, 1, 1, 0, 1, 1, 0, 1, 1, 0>;
+using RatioOne = std::ratio<1>;
 
-template <int NUM, int DEN>
-using DistanceUnit = detail::Unit<0, NUM, DEN, 1, 1, 1, 0, 1, 1, 0>;
+using Unitless = detail::Unit<0, RatioOne, 0, RatioOne, 0, RatioOne, 0>;
 
-template <int NUM, int DEN>
-using MassUnit = detail::Unit<0, 1, 1, 0, NUM, DEN, 1, 1, 1, 0>;
+template <class ToKgRatio>
+using DistanceUnit = detail::Unit<0, ToKgRatio, 1, RatioOne, 0, RatioOne, 0>;
 
-template <int NUM, int DEN>
-using TimeUnit = detail::Unit<0, 1, 1, 0, 1, 1, 0, NUM, DEN, 1>;
+template <class ToKgRatio>
+using MassUnit = detail::Unit<0, RatioOne, 0, ToKgRatio, 1, RatioOne, 0>;
 
-using Metres = DistanceUnit<1, 1>;
-using Kilometres = DistanceUnit<1000, 1>;
+template <class ToSRatio >
+using TimeUnit = detail::Unit<0, RatioOne, 0, RatioOne, 0, ToSRatio, 1>;
 
-using Kilograms = MassUnit<1, 1>;
-using Grams = MassUnit<1, 1000>;
+using Metres = DistanceUnit<RatioOne>;
+using Kilometres = DistanceUnit<std::kilo>;
 
-using Milliseconds = TimeUnit<1, 1000>;
-using Seconds = TimeUnit<1, 1>;
-using Minutes = TimeUnit<60, 1>;
-using Hours = TimeUnit<60 * 60, 1>;
+using Kilograms = MassUnit<RatioOne>;
+using Grams = MassUnit<std::milli>;
+
+using Milliseconds = TimeUnit<std::milli>;
+using Seconds = TimeUnit<RatioOne>;
+using Minutes = TimeUnit<std::ratio<60>>;
+using Hours = TimeUnit<std::ratio<60 * 60>>;
+
+using MPS = decltype(Metres{} / Seconds{});
+using KPH = decltype(Kilometres{} / Hours{});
+using MPS2 = decltype(MPS{} / Seconds{});
+using Newtons = decltype(Kilograms{} * MPS2{});
 
 template <class UnitType>
 class Value final {
@@ -195,22 +193,111 @@ private:
 
 };
 
+using Distance = Value<Metres>;
+using Mass = Value<Kilograms>;
+using Time = Value<Seconds>;
+// #TODO: velocity, acceleration and force are all vectors, so it may not be the best idea to reserve
+// these names. Velocity could be renamed to Speed, but what about Acceleration and Force?
+using Velocity = Value<MPS>;
+using Acceleration = Value<MPS2>;
+using Force = Value<Newtons>;
+
 namespace unit_literals {
 
+inline constexpr Value<Metres> operator""_m(long double value) {
+	return Value<Metres>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Metres> operator""_m(unsigned long long value) {
+	return Value<Metres>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Metres> operator""_km(long double value) {
+	return Value<Kilometres>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Kilometres> operator""_km(unsigned long long value) {
+	return Value<Kilometres>{static_cast<float>(value)};
+}
+
 inline constexpr Value<Kilograms> operator""_kg(long double value) {
-	return Value<Kilograms>(static_cast<float>(value));
+	return Value<Kilograms>{static_cast<float>(value)};
 }
 
 inline constexpr Value<Kilograms> operator""_kg(unsigned long long value) {
-	return Value<Kilograms>(static_cast<float>(value));
+	return Value<Kilograms>{static_cast<float>(value)};
 }
 
 inline constexpr Value<Grams> operator""_g(long double value) {
-	return Value<Grams>(static_cast<float>(value));
+	return Value<Grams>{static_cast<float>(value)};
 }
 
 inline constexpr Value<Grams> operator""_g(unsigned long long value) {
-	return Value<Grams>(static_cast<float>(value));
+	return Value<Grams>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Milliseconds> operator""_ms(long double value) {
+	return Value<Milliseconds>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Milliseconds> operator""_ms(unsigned long long value) {
+	return Value<Milliseconds>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Seconds> operator""_s(long double value) {
+	return Value<Seconds>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Seconds> operator""_s(unsigned long long value) {
+	return Value<Seconds>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Minutes> operator""_min(long double value) {
+	return Value<Minutes>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Minutes> operator""_min(unsigned long long value) {
+	return Value<Minutes>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Hours> operator""_h(long double value) {
+	return Value<Hours>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Hours> operator""_h(unsigned long long value) {
+	return Value<Hours>{static_cast<float>(value)};
+}
+
+inline constexpr Value<MPS> operator""_mps(long double value) {
+	return Value<MPS>{static_cast<float>(value)};
+}
+
+inline constexpr Value<MPS> operator""_mps(unsigned long long value) {
+	return Value<MPS>{static_cast<float>(value)};
+}
+
+inline constexpr Value<KPH> operator""_kph(long double value) {
+	return Value<KPH>{static_cast<float>(value)};
+}
+
+inline constexpr Value<KPH> operator""_kph(unsigned long long value) {
+	return Value<KPH>{static_cast<float>(value)};
+}
+
+inline constexpr Value<MPS2> operator""_mps2(long double value) {
+	return Value<MPS2>{static_cast<float>(value)};
+}
+
+inline constexpr Value<MPS2> operator""_mps2(unsigned long long value) {
+	return Value<MPS2>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Newtons> operator""_N(long double value) {
+	return Value<Newtons>{static_cast<float>(value)};
+}
+
+inline constexpr Value<Newtons> operator""_N(unsigned long long value) {
+	return Value<Newtons>{static_cast<float>(value)};
 }
 
 } // namespace unit_literals

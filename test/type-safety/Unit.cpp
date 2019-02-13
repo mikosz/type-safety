@@ -8,8 +8,8 @@ using namespace type_safety::unit_literals;
 
 namespace /* anonymous */ {
 
-using Tonnes = MassUnit<1000, 1>;
-using Pounds = MassUnit<45359, 100000>;
+using Tonnes = MassUnit<std::kilo>;
+using Pounds = MassUnit<std::ratio<45359, 100000>>;
 
 TEST(UnitTest, DistanceCompatibleTypeConversion) {
     constexpr auto distance = Value<Metres>{2.1f};
@@ -74,11 +74,41 @@ TEST(UnitTest, TimeCompatibleTypeConversion) {
 }
 
 TEST(UnitTest, LiteralsCreation) {
+	static_assert(floatEq((4.2_m).value<Metres>(), 4.2f));
+	static_assert(floatEq((4_m).value<Metres>(), 4.0f));
+
+	static_assert(floatEq((4.2_km).value<Kilometres>(), 4.2f));
+	static_assert(floatEq((4_km).value<Kilometres>(), 4.0f));
+
 	static_assert(floatEq((4.2_kg).value<Kilograms>(), 4.2f));
 	static_assert(floatEq((4_kg).value<Kilograms>(), 4.0f));
 
 	static_assert(floatEq((4.2_g).value<Grams>(), 4.2f));
 	static_assert(floatEq((4_g).value<Grams>(), 4.0f));
+
+	static_assert(floatEq((4.2_ms).value<Milliseconds>(), 4.2f));
+	static_assert(floatEq((4_ms).value<Milliseconds>(), 4.0f));
+
+	static_assert(floatEq((4.2_s).value<Seconds>(), 4.2f));
+	static_assert(floatEq((4_s).value<Seconds>(), 4.0f));
+
+	static_assert(floatEq((4.2_min).value<Minutes>(), 4.2f));
+	static_assert(floatEq((4_min).value<Minutes>(), 4.0f));
+
+	static_assert(floatEq((4.2_h).value<Hours>(), 4.2f));
+	static_assert(floatEq((4_h).value<Hours>(), 4.0f));
+
+	static_assert(floatEq((4.2_mps).value<MPS>(), 4.2f));
+	static_assert(floatEq((4_mps).value<MPS>(), 4.0f));
+
+	static_assert(floatEq((4.2_kph).value<KPH>(), 4.2f));
+	static_assert(floatEq((4_kph).value<KPH>(), 4.0f));
+
+	static_assert(floatEq((4.2_mps2).value<MPS2>(), 4.2f));
+	static_assert(floatEq((4_mps2).value<MPS2>(), 4.0f));
+
+	static_assert(floatEq((4.2_N).value<Newtons>(), 4.2f));
+	static_assert(floatEq((4_N).value<Newtons>(), 4.0f));
 }
 
 TEST(UnitTest, ValueAddition) {
