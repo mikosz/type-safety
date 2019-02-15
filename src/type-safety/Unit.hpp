@@ -289,6 +289,8 @@ using Velocity = Value<MPS>;
 using Acceleration = Value<MPS2>;
 using Force = Value<Newtons>;
 
+static_assert(sizeof(Distance) == sizeof(float));
+
 namespace unit_literals {
 
 inline constexpr Value<Metres> operator""_m(long double value) {

@@ -111,6 +111,8 @@ private:
 
 };
 
+static_assert(sizeof(Angle) == sizeof(float));
+
 namespace angle_literals {
 
 inline constexpr Angle operator""_deg(long double d) {
