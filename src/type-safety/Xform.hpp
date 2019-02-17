@@ -47,7 +47,7 @@ public:
 	template <class OtherFromSpaceT, class OtherToSpaceT>
 	auto then(const Xform<OtherFromSpaceT, OtherToSpaceT>& other) const {
 		if (!spacesMatch(toSpace(), other.fromSpace())) {
-			assert(false);
+			assert(!"Compile time spaces don't match");
 		}
 
 		return true;

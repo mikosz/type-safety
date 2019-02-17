@@ -18,12 +18,12 @@ struct IntSpace {
 	}
 };
 
+struct WildcardSpace {
+};
+
 bool spacesMatch(IntSpace lhs, IntSpace rhs) {
 	return lhs.marker == rhs.marker;
 }
-
-struct WildcardSpace {
-};
 
 template <class SpaceT>
 constexpr bool spaceTypesMatch(WildcardSpace, SpaceT) {
@@ -66,18 +66,19 @@ TEST(XformTest, CanAppendXformsWithCompileTimeMatchingSpaces) {
 TEST(XformTest, CanOverrideCompileTimeSpaceMatching) {
 	auto wtc = Xform<space::World, space::Camera>{};
 	auto atp = Xform<WildcardSpace, space::Player>{};
+	auto pta = Xform<space::Player, WildcardSpace>{};
 
 	wtc.then(atp);
-	atp.then(wtc);
+	pta.then(wtc);
 }
 
 TEST(XformTest, CanOverrideRuntimeSpaceMatching) {
-	auto wti3 = Xform<space::World, IntSpace>{3};
-	auto i3tp = Xform<IntSpace, space::Player>{3};
-	auto i2tp = Xform<IntSpace, space::Player>{2};
+	auto wti3 = Xform<space::World, IntSpace>{IntSpace{3}};
+	auto i3tp = Xform<IntSpace, space::Player>{IntSpace{3}};
+	auto i2tp = Xform<IntSpace, space::Player>{IntSpace{2}};
 
 	wti3.then(i3tp);
-	wti3.then(i2tp);
+	EXPECT_DEATH(wti3.then(i2tp), "Compile time spaces don't match");
 }
 
 } // anonymous namespace
