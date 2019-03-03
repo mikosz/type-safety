@@ -75,9 +75,12 @@ TEST(XformTest, CanOverrideCompileTimeSpaceMatching) {
 TEST(XformTest, CanOverrideRuntimeSpaceMatching) {
 	auto wti3 = Xform<space::World, IntSpace>{IntSpace{3}};
 	auto i3tp = Xform<IntSpace, space::Player>{IntSpace{3}};
-	auto i2tp = Xform<IntSpace, space::Player>{IntSpace{2}};
-
 	wti3.then(i3tp);
+}
+
+TEST(XformTest, AssertsWhenRuntimeDataDoesntMatch) {
+	auto wti3 = Xform<space::World, IntSpace>{IntSpace{3}};
+	auto i2tp = Xform<IntSpace, space::Player>{IntSpace{2}};
 	EXPECT_DEATH(wti3.then(i2tp), "Compile time spaces don't match");
 }
 
