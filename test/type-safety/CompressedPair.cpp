@@ -25,13 +25,11 @@ TEST(CompressedPairTest, NeitherEmptyHasSizeOfSum) {
 	static_assert(sizeof(ChildType) == sizeof(bool) * 3);
 }
 
-TEST(CompressedPairTest, OneEmptyIsHasSizeOfSum) {
+TEST(CompressedPairTest, OneEmptyHasSizeOfSum) {
 	using FirstEmptyChildType = Child<CompressedPair<bool, Empty>>;
-	static_assert(std::is_same_v<CompressedPair<bool, Empty>::Stored, bool>);
 	static_assert(sizeof(FirstEmptyChildType) == sizeof(bool) * 2);
 
 	using SecondEmptyChildType = Child<CompressedPair<Empty, bool>>;
-	static_assert(std::is_same_v<CompressedPair<Empty, bool>::Stored, bool>);
 	static_assert(sizeof(SecondEmptyChildType) == sizeof(bool) * 2);
 }
 
@@ -55,12 +53,12 @@ TEST(CompressedPairTest, NeitherEmptyIsConstructibleWithParameters) {
 }
 
 TEST(CompressedPairTest, OneEmptyIsConstructibleWithNonEmptyParameter) {
-	const auto firstNonEmpty = CompressedPair<int, Empty>{42};
+	const auto firstNonEmpty = CompressedPair<int, Empty>{42, Empty{}};
 	static_assert(std::is_same_v<decltype(firstNonEmpty.first()), const int&>);
 	static_assert(std::is_same_v<decltype(firstNonEmpty.second()), Empty>);
 	EXPECT_EQ(firstNonEmpty.first(), 42);
 
-	const auto secondNonEmpty = CompressedPair<Empty, int>{42};
+	const auto secondNonEmpty = CompressedPair<Empty, int>{Empty{}, 42};
 	static_assert(std::is_same_v<decltype(secondNonEmpty.first()), Empty>);
 	static_assert(std::is_same_v<decltype(secondNonEmpty.second()), const int&>);
 	EXPECT_EQ(secondNonEmpty.second(), 42);

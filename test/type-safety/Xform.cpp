@@ -42,7 +42,7 @@ constexpr bool spaceTypesMatch(WildcardSpace, SpaceT) {
 }
 
 TEST(XformTest, XformFromIntToEmptySpaceAccess) {
-	auto xform = Xform<IntSpace, space::Player>{IntSpace{42}};
+	auto xform = Xform<IntSpace, space::Player>{IntSpace{42}, space::Player{}};
 	auto from = xform.fromSpace();
 	auto to = xform.toSpace();
 
@@ -73,15 +73,17 @@ TEST(XformTest, CanOverrideCompileTimeSpaceMatching) {
 }
 
 TEST(XformTest, CanOverrideRuntimeSpaceMatching) {
-	auto wti3 = Xform<space::World, IntSpace>{IntSpace{3}};
-	auto i3tp = Xform<IntSpace, space::Player>{IntSpace{3}};
-	wti3.then(i3tp);
+	auto wti3 = Xform<space::World, IntSpace>{space::World{}, IntSpace{3}};
+	auto i3ti2 = Xform<IntSpace, IntSpace>{IntSpace{3}, IntSpace{2}};
+	auto i2tp = Xform<IntSpace, space::Player>{IntSpace{2}, space::Player{}};
+
+	wti3.then(i3ti2).then(i2tp);
 }
 
 TEST(XformTest, AssertsWhenRuntimeDataDoesntMatch) {
-	auto wti3 = Xform<space::World, IntSpace>{IntSpace{3}};
-	auto i2tp = Xform<IntSpace, space::Player>{IntSpace{2}};
-	EXPECT_DEATH(wti3.then(i2tp), "Compile time spaces don't match");
+	auto wti3 = Xform<space::World, IntSpace>{space::World{}, IntSpace{3}};
+	auto i2tp = Xform<IntSpace, space::Player>{IntSpace{2}, space::Player{}};
+	EXPECT_DEATH(wti3.then(i2tp), "Run-time spaces don't match");
 }
 
 } // anonymous namespace

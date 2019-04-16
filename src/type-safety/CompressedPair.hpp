@@ -18,6 +18,15 @@ constexpr auto ONE_EMPTY = !BOTH_EMPTY<FirstT, SecondT> && !NEITHER_EMPTY<FirstT
 template <class FirstT, class SecondT>
 using NonEmptyT = std::conditional_t<!std::is_empty_v<typename FirstT>, FirstT, SecondT>;
 
+template <class FirstT, class SecondT>
+auto getNonempty([[maybe_unused]] FirstT first, [[maybe_unused]] SecondT second) {
+	if constexpr (!std::is_empty_v<FirstT>) {
+		return std::move(first);
+	} else {
+		return std::move(second);
+	}
+}
+
 } // namespace detail
 
 template <class FirstT, class SecondT, class = void>
@@ -27,6 +36,9 @@ template <class FirstT, class SecondT>
 struct CompressedPair<FirstT, SecondT, std::enable_if_t<detail::BOTH_EMPTY<FirstT, SecondT>>> {
 
 	constexpr CompressedPair() = default;
+
+	CompressedPair(FirstT, SecondT) {
+	}
 
 	constexpr FirstT first() const {
 		return FirstT{};
@@ -70,12 +82,10 @@ template <class FirstT, class SecondT>
 class CompressedPair<FirstT, SecondT, std::enable_if_t<detail::ONE_EMPTY<FirstT, SecondT>>> {
 public:
 
-	using Stored = detail::NonEmptyT<FirstT, SecondT>;
-
 	CompressedPair() = default;
 
-	CompressedPair(Stored stored) :
-		stored_(std::move(stored))
+	CompressedPair(FirstT first, SecondT second) :
+		stored_(detail::getNonempty(std::move(first), std::move(second)))
 	{
 	}
 
@@ -96,6 +106,8 @@ public:
 	}
 
 private:
+
+	using Stored = detail::NonEmptyT<FirstT, SecondT>;
 
 	Stored stored_;
 
