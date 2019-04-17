@@ -1,0 +1,189 @@
+C++ is a strongly-typed language.
+
+/// ---
+
+This means that this
+
+---
+
+struct Number { /* ... */ };
+
+Number sum(Number lhs, Number rhs);
+
+int main() {
+	sum(Number{42}, Number{42}};
+}
+
+---
+
+will compile and this
+
+---
+
+struct Number { /* ... */ };
+struct String { /* ... */ };
+
+Number sum(Number lhs, Number rhs);
+
+int main() {
+	sum(String{"forty two"}, Number{42}};
+}
+
+---
+
+won't (assuming that there's no implicit conversion between Number and String).
+
+/// ---
+
+Type-safety is mostly enforced at compile-time which means it's:
+* free (when it comes to run-time performance),
+* always checked (there's no danger that an exotic, unchecked line of code be suddenly invalid at your E3 presentation).
+
+/// ---
+
+Good user-defined types have the added benefit of being descriptive and self-documenting. Consider the following examples:
+
+* std::cos(3.0f) - what is 3.0f? By convention std uses radians everywhere, so it's a good guess.
+
+* math::Cos(3.0f) - here we're using some external library.
+
+We may be lucky that the parameter name suggests whether it's in degrees or radians.
+
+float Cos(float angle_deg);
+
+	Or maybe there's a comment.
+	
+// Calculates the cosine of the provided angle in degrees.
+float Cos(float angle);
+
+	Or maybe this library has it's own convention, which means you have to make sure it's followed and known by all programmers.
+	Either way it's hard to tell by just reading the code what math::Cos(3.0f) means.
+
+/// ---
+
+Let's see what we can do about it.
+
+// *************************************************************************
+
+Type-rich programming - a super simple case.
+
+Let's stay with the problem of angles. We can create a class Angle that internally keeps angles in radians
+
+---
+
+class Angle {
+	...
+private:
+	float radians_;
+};
+
+---
+
+and requires that whenever it is instantiated from a floating-point value a tag must be provided mentioning the unit.
+
+---
+
+struct RadiansTag {};
+const auto radiansTag = RadiansTag{};
+
+struct DegreesTag {};
+const auto degreesTag = DegreesTag{};
+
+class Angle {
+public:
+
+	Angle(RadiansTag, float r) : radians_(r) {}
+	Angle(DegreesTag, float d) : radians_((PI / 180.0f) * d) {}
+	
+...
+	
+---
+
+Retrieval of a floating point value must also specify whether the user wants degrees or radians.
+
+...
+
+class Angle {
+public:
+...
+	float degrees() const {
+		return radians_ * (180.0f / PI);
+	}
+
+	float radians() const {
+		return radians_;
+	}
+...
+
+/// ---
+
+At this point the user code would look like this:
+
+---
+
+float cos(Angle a); // a function taking an angle as a parameter
+Angle acos(float c); // a function returning an angle
+
+int main() {
+	const auto c = cos(Angle(degreesTag, 45.0f));
+	const auto a = acos(c);
+	std::cerr << c.radians() << " rad"; // will print "0.785 radians" (approximately)
+}
+
+---
+
+There is no way to make an error in initialisation or retrieval of the angle value. The functions use types that clearly define what the values represent.
+
+/// ---
+
+C++11 gave us user-defined literals, so we can make initialisation even nicer
+
+---
+
+Angle operator""_deg(long double d) {
+    return Angle{degreesTag, static_cast<float>(d)};
+}
+
+Angle operator""_deg(unsigned long long d) {
+    return Angle{degreesTag, static_cast<float>(d)};
+}
+
+Angle operator""_rad(long double r) {
+    return Angle{radiansTag, static_cast<float>(r)};
+}
+
+Angle operator""_rad(unsigned long long r) {
+    return Angle{radiansTag, static_cast<float>(r)};
+}
+
+---
+
+This allows us to replace
+
+---
+
+const auto c = cos(Angle(degreesTag, 45.0f));
+
+---
+
+with
+
+---
+
+const auto c = cos(45_deg);
+
+---
+
+/// ---
+
+Furthermore we can:
+* make sure only those arithmetic operations that make sense may be performed (e.g. provide addition and subtraction of angles, but no multiplication or division; multiplication by scalar but no scalar-value addition)
+* provide comparison functions that take into account floating-point value rounding errors
+* make everything constexpr!
+
+/// ---
+
+SHOW FINAL VERSION OF Angle.hpp, tests and benchmarks, run them, show generated assembly which is identical for floats and Angle (with exception of user-defined literals for VC++)
+
+// *************************************************************************
+

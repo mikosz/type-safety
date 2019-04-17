@@ -98,6 +98,8 @@ public:
         return Angle{radiansTag, -a.radians_};
     }
 
+	// TODO: multiplication by scalar
+
     friend std::ostream& operator<<(std::ostream& os, Angle a) {
         return os << a.degrees() << "_deg";
     }
