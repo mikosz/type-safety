@@ -52,4 +52,14 @@ private:
 
 };
 
+template <class FromSpace, class ToSpace>
+auto makeXform(FromSpace fromSpace, ToSpace toSpace) {
+	return Xform<FromSpace, ToSpace>{std::move(fromSpace), std::move(toSpace)};
+}
+
+template <class FromSpace, class ToSpace>
+auto makeXform(Matrix matrix, FromSpace fromSpace, ToSpace toSpace) {
+	return Xform<FromSpace, ToSpace>{std::move(matrix), std::move(fromSpace), std::move(toSpace)};
+}
+
 } // namespace type_safety

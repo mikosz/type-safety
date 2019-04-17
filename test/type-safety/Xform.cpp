@@ -22,7 +22,7 @@ namespace /* anonymous */
 }
 
 TEST(XformTest, XformFromIntToEmptySpaceAccess) {
-	auto xform = Xform<space::PlayerAtFrame, space::Player>{space::PlayerAtFrame{42}, space::Player{}};
+	auto xform = makeXform(space::PlayerAtFrame{42}, space::Player{});
 	auto from = xform.fromSpace();
 	auto to = xform.toSpace();
 
@@ -56,24 +56,24 @@ TEST(XformTest, CanOverrideCompileTimeSpaceMatching) {
 }
 
 TEST(XformTest, CanOverrideRuntimeSpaceMatching) {
-	auto wtp3 = Xform<space::World, space::PlayerAtFrame>{space::World{}, space::PlayerAtFrame{3}};
-	auto p3tp2 = Xform<space::PlayerAtFrame, space::PlayerAtFrame>{space::PlayerAtFrame{3}, space::PlayerAtFrame{2}};
-	auto p2tp = Xform<space::PlayerAtFrame, space::Player>{space::PlayerAtFrame{2}, space::Player{}};
+	auto wtp3 = makeXform(space::World{}, space::PlayerAtFrame{3});
+	auto p3tp2 = makeXform(space::PlayerAtFrame{3}, space::PlayerAtFrame{2});
+	auto p2tp = makeXform(space::PlayerAtFrame{2}, space::Player{});
 
 	wtp3.then(p3tp2).then(p2tp);
 }
 
 #ifdef DO_SPACE_RUNTIME_CHECKS
 TEST(XformTest, AssertsWhenRuntimeDataDoesntMatch) {
-	auto wtp3 = Xform<space::World, space::PlayerAtFrame>{space::World{}, space::PlayerAtFrame{3}};
-	auto p2tp = Xform<space::PlayerAtFrame, space::Player>{space::PlayerAtFrame{2}, space::Player{}};
+	auto wtp3 = makeXform(space::World{}, space::PlayerAtFrame{3});
+	auto p2tp = makeXform(space::PlayerAtFrame{2}, space::Player{});
 	EXPECT_DEATH(wtp3.then(p2tp), "Run-time spaces don't match");
 }
 #endif /* DO_SPACE_RUNTIME_CHECKS */
 
 TEST(XformTest, ImplicitlyConvertibleSpacesMatch) {
-	auto wtp = Xform<space::World, space::Player>{space::World{}, space::Player{}};
-	auto p1tp2 = Xform<space::PlayerAtFrame, space::PlayerAtFrame>{space::PlayerAtFrame{1}, space::PlayerAtFrame{2}};
+	auto wtp = makeXform(space::World{}, space::Player{});
+	auto p1tp2 = makeXform(space::PlayerAtFrame{1}, space::PlayerAtFrame{2});
 	auto ptc = Xform<space::Player, space::Camera>{};
 
 	wtp.then(p1tp2).then(ptc);
