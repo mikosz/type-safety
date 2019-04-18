@@ -183,7 +183,7 @@ Furthermore we can:
 
 /// ---
 
-SHOW FINAL VERSION OF Angle.hpp, tests and benchmarks, run them, show generated assembly which is identical for floats and Angle (with exception of user-defined literals for VC++)
+SHOW FINAL VERSION OF Angle.hpp, tests and benchmarks, run them, show generated assembly which is identical for floats and Angle (with exception of user-defined literals for VC++), show results of how this affects compilation times.
 
 // *************************************************************************
 

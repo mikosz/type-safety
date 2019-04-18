@@ -69,6 +69,24 @@ TEST(AngleTest, AngleArithmetics) {
     static_assert(42.0_deg + 1.0_deg == 43.0_deg);
     static_assert(42.0_deg - 1.0_deg == 41.0_deg);
     static_assert(-42.0_deg == -(42.0_deg));
+	static_assert(42_deg * 2.0f == 84_deg);
+	static_assert(2.0f * 42_deg == 84_deg);
+	static_assert(42_deg / 2.0f == 21_deg);
+
+	auto plusEq = 42_deg;
+	auto minusEq = 42_deg;
+	auto timesEq = 42_deg;
+	auto divEq = 42_deg;
+
+	plusEq += 2_deg;
+	minusEq -= 2_deg;
+	timesEq *= 2.0f;
+	divEq /= 2.0f;
+
+	EXPECT_EQ(plusEq, 44_deg);
+	EXPECT_EQ(minusEq, 40_deg);
+	EXPECT_EQ(timesEq, 84_deg);
+	EXPECT_EQ(divEq, 21_deg);
 }
 
 TEST(AngleTest, AnglePrintToOstream) {

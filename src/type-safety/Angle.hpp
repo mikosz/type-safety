@@ -98,9 +98,29 @@ public:
         return Angle{radiansTag, -a.radians_};
     }
 
-	// TODO: multiplication by scalar
+	constexpr Angle& operator*=(float scalar) {
+		radians_ *= scalar;
+		return *this;
+	}
 
-    friend std::ostream& operator<<(std::ostream& os, Angle a) {
+	friend constexpr Angle operator*(Angle a, float scalar) {
+		return Angle{std::move(a)} *= scalar;
+	}
+
+	friend constexpr Angle operator*(float scalar, Angle a) {
+		return Angle{std::move(a)} *= scalar;
+	}
+
+	constexpr Angle& operator/=(float scalar) {
+		radians_ /= scalar;
+		return *this;
+	}
+
+	friend constexpr Angle operator/(Angle a, float scalar) {
+		return Angle{std::move(a)} /= scalar;
+	}
+
+	friend std::ostream& operator<<(std::ostream& os, Angle a) {
         return os << a.degrees() << "_deg";
     }
 
