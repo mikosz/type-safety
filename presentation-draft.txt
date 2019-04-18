@@ -187,3 +187,117 @@ SHOW FINAL VERSION OF Angle.hpp, tests and benchmarks, run them, show generated 
 
 // *************************************************************************
 
+Now we have a pretty neat implementation of an Angle class. There are however many other dimensions (distance, mass, time), which could be raised to a power (distance^2 => area) and should work with each other yielding even more complicated types (distance / time^2 => acceleration). Writing all this code would mean a lot of typing and duplicated code. Thankfully we have templates to the rescue.
+
+I'm going to show you an implementation inspired by a class proposed by Biarne Stroustrup in an article (LINK TO ARTICLE). There is an even more ambitious implementation in Boost, that allows the creation of multiple sets of unit types, but this is perhaps overkill (LINK TO BOOST LIB).
+
+We're going to limit ourselves to three dimensions: distance, mass and time. Adding more is pretty straightforward and probably unnecessary.
+
+/// ---
+
+We'll need a class that will represent a value in a given unit. Because we want to handle many different unit types this will have to be a template:
+
+---
+
+template <class Unit>
+class Value {
+public:
+
+	explicit Value(float value) : value_(std::move(value)) {}
+	
+private:
+	
+	float value_;
+
+};
+
+---
+
+The fact that the constructor is explicit means that the user needs to specify the wanted unit type when going from literal to value type. We'll want to have implicit conversion between values of units representing the same dimension, e.g. we'll want a function taking a speed parameter in km/h to accept values in m/s (but not others). Our "Unit" type will therefore have to be able to tell whether one unit type is convertible to another and provide a conversion ratio. We will definitely also need a function that returns the actual floating point value encapsulated. We'll force the player to provide a unit they want the value in. This checks for possible errors that can occur when using templates, auto or automatic refactoring.
+
+---
+
+template <class Unit>
+class Value {
+	...
+	
+	template <CompatibleUnit>
+	Value(Value<CompatibleUnit> compatibleValue) : value_(compatibleValue.value<Unit>()) {}
+	
+	template <CompatibleUnit>
+	float value() {
+		static_assert(Unit::IS_CONVERTIBLE_TO<CompatibleUnit>);
+		using Ratio = Unit::ConversionRatio<CompatibleUnit>;
+		if constexpr (std::ratio_equal_v<Ratio, std::ratio<1, 1>>) {
+			return value_;
+		} else {
+			return (static_cast<float>(Ratio::num) / static_cast<float>(Ratio::den)) * value_;
+		}
+	}
+
+	...
+};
+
+---
+
+Addition, subtraction and comparison can now be defined in terms of the value function and allowed for all compatible value types
+
+---
+
+template <class Unit>
+class Value {
+	...
+	
+	template <class CompatibleUnitT>
+	constexpr Value& operator+=(Value<CompatibleUnitT> other) {
+		value_ += other.value<Unit>();
+		return *this;
+	}
+
+	...
+};
+
+---
+
+Multiplication and division on the other hand can be performed using any value types, but requires more from the yet undiscussed Unit type
+
+---
+
+template <class Unit>
+class Value {
+	...
+	
+	template <class OtherUnit>
+	friend constexpr auto operator*(Value lhs, Value<OtherUnit> rhs) {
+		using UnitProduct = decltype(decltype(lhs)::Unit{} * decltype(rhs)::Unit{});
+		return Value<UnitProduct>{lhs.value_ * rhs.value<OtherUnit>()};
+	}
+
+	...
+};
+
+/// ---
+
+Now that we have the requirements for the unit type, let's figure out how to define it. We want types for different units to be different (so distance will have a different type than acceleration), but also to differentiate between different flavours (so separate km/h from m/s).
+
+---
+
+template <
+	class TO_M_RATIO, int M_EXP,
+	class TO_KG_RATIO, int KG_EXP,
+	class TO_S_RATIO, int S_EXP
+>
+class Unit;
+
+---
+
+The class parameters are instances of the std::ratio template, which is a compile-time representation of rational numbers. The _EXP parameters are exponents for each dimension. Let's define a few aliases:
+
+---
+
+using Metres = Unit<std::ratio<1>, 1, std::ratio<1>, 0, std::ratio<1>, 0>;
+using Kilometres = Unit<std::kilo, 1, std::ratio<1>, 0, std::ratio<1>, 0>; // std::kilo is an alias for std::ratio<1000, 1>
+using Kilograms = Unit<std::ratio<1>, 0, std::ratio<1>, 1, std::ratio<1>, 0>;
+
+---
+

@@ -4,6 +4,8 @@
 
 namespace type_safety {
 
+constexpr auto PI = 3.141592f;
+
 inline constexpr bool floatLT(float lhs, float rhs) {
     return lhs < rhs - FLOAT_EQ_EPSILON;
 }

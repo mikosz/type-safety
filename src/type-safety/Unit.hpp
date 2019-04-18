@@ -10,7 +10,6 @@ namespace type_safety {
 namespace detail {
 
 template <
-    int RAD_EXP_PARAM,
 	class TO_M_RATIO_PARAM,
     int M_EXP_PARAM,
     class TO_KG_RATIO_PARAM,
@@ -20,7 +19,6 @@ template <
 >
 struct Unit final {
 
-    static constexpr auto RAD_EXP = RAD_EXP_PARAM;
 	using TO_M_RATIO = TO_M_RATIO_PARAM;
     static constexpr auto M_EXP = M_EXP_PARAM;
 	using TO_KG_RATIO = TO_KG_RATIO_PARAM;
@@ -30,8 +28,7 @@ struct Unit final {
 
     template <class OtherUnitT>
 	static constexpr auto IS_CONVERTIBLE_TO =
-		RAD_EXP == OtherUnitT::RAD_EXP
-		&& M_EXP == OtherUnitT::M_EXP
+		M_EXP == OtherUnitT::M_EXP
 		&& KG_EXP == OtherUnitT::KG_EXP
         && S_EXP == OtherUnitT::S_EXP
         ;
@@ -52,7 +49,6 @@ struct Unit final {
 	template <class OtherUnitT>
 	constexpr auto operator*(OtherUnitT) const {
 		return Unit<
-			RAD_EXP + OtherUnitT::RAD_EXP,
 			std::ratio_multiply<TO_M_RATIO, OtherUnitT::TO_M_RATIO>,
 			M_EXP + OtherUnitT::M_EXP,
 			std::ratio_multiply<TO_KG_RATIO, OtherUnitT::TO_KG_RATIO>,
@@ -65,7 +61,6 @@ struct Unit final {
 	template <class OtherUnitT>
 	constexpr auto operator/(OtherUnitT) const {
 		return Unit<
-			RAD_EXP - OtherUnitT::RAD_EXP,
 			std::ratio_divide<TO_M_RATIO, OtherUnitT::TO_M_RATIO>,
 			M_EXP - OtherUnitT::M_EXP,
 			std::ratio_divide<TO_KG_RATIO, OtherUnitT::TO_KG_RATIO>,
@@ -79,24 +74,22 @@ struct Unit final {
 
 } // namespace detail
 
-using RatioOne = std::ratio<1>;
-
-using Dimensionless = detail::Unit<0, RatioOne, 0, RatioOne, 0, RatioOne, 0>;
+using Dimensionless = detail::Unit<std::ratio<1>, 0, std::ratio<1>, 0, std::ratio<1>, 0>;
 
 std::ostream& operator<<(std::ostream& os, Dimensionless) {
 	return os;
 }
 
-template <class ToKgRatio>
-using DistanceUnit = detail::Unit<0, ToKgRatio, 1, RatioOne, 0, RatioOne, 0>;
+template <class ToMRatio>
+using DistanceUnit = detail::Unit<ToMRatio, 1, std::ratio<1>, 0, std::ratio<1>, 0>;
 
 template <class ToKgRatio>
-using MassUnit = detail::Unit<0, RatioOne, 0, ToKgRatio, 1, RatioOne, 0>;
+using MassUnit = detail::Unit<std::ratio<1>, 0, ToKgRatio, 1, std::ratio<1>, 0>;
 
 template <class ToSRatio >
-using TimeUnit = detail::Unit<0, RatioOne, 0, RatioOne, 0, ToSRatio, 1>;
+using TimeUnit = detail::Unit<std::ratio<1>, 0, std::ratio<1>, 0, ToSRatio, 1>;
 
-using Metres = DistanceUnit<RatioOne>;
+using Metres = DistanceUnit<std::ratio<1>>;
 using Kilometres = DistanceUnit<std::kilo>;
 
 std::ostream& operator<<(std::ostream& os, Metres) {
@@ -107,7 +100,7 @@ std::ostream& operator<<(std::ostream& os, Kilometres) {
 	return os << "_km";
 }
 
-using Kilograms = MassUnit<RatioOne>;
+using Kilograms = MassUnit<std::ratio<1>>;
 using Grams = MassUnit<std::milli>;
 
 std::ostream& operator<<(std::ostream& os, Kilograms) {
@@ -119,7 +112,7 @@ std::ostream& operator<<(std::ostream& os, Grams) {
 }
 
 using Milliseconds = TimeUnit<std::milli>;
-using Seconds = TimeUnit<RatioOne>;
+using Seconds = TimeUnit<std::ratio<1>>;
 using Minutes = TimeUnit<std::ratio<60>>;
 using Hours = TimeUnit<std::ratio<60 * 60>>;
 

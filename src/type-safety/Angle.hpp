@@ -22,8 +22,6 @@ struct DegreesTag {
 };
 constexpr const auto degreesTag = DegreesTag{};
 
-constexpr auto PI = 3.141592f;
-
 class Angle final {
 public:
 

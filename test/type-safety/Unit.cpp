@@ -154,7 +154,6 @@ TEST(UnitTest, MassValueMultiplication) {
 	constexpr auto threeG = 3_g;
 
 	using GKg = decltype(Grams{} * Kilograms{});
-	static_assert(GKg::RAD_EXP == 0);
 	static_assert(std::ratio_equal_v<GKg::TO_M_RATIO, std::ratio<1, 1>>);
 	static_assert(GKg::M_EXP == 0);
 	static_assert(std::ratio_equal_v<GKg::TO_KG_RATIO, Grams::TO_KG_RATIO>);
@@ -163,7 +162,6 @@ TEST(UnitTest, MassValueMultiplication) {
 	static_assert(GKg::S_EXP == 0);
 
 	using GramsSq = decltype(Grams{} * Grams{});
-	static_assert(GramsSq::RAD_EXP == 0);
 	static_assert(std::ratio_equal_v<GramsSq::TO_M_RATIO, std::ratio<1, 1>>);
 	static_assert(GramsSq::M_EXP == 0);
 	static_assert(
