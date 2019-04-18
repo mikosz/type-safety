@@ -284,9 +284,9 @@ using Scalar = Value<Dimensionless>;
 using Distance = Value<Metres>;
 using Mass = Value<Kilograms>;
 using Time = Value<Seconds>;
-// #TODO: velocity, acceleration and force are all vectors, so it may not be the best idea to reserve
-// these names. Velocity could be renamed to Speed, but what about Acceleration and Force?
-using Velocity = Value<MPS>;
+using Speed = Value<MPS>;
+// #TODO: acceleration and force are vectors, so it may not be the best idea to reserve
+// these names.
 using Acceleration = Value<MPS2>;
 using Force = Value<Newtons>;
 
