@@ -139,12 +139,12 @@ TEST(UnitTest, ValueSubtraction) {
 }
 
 TEST(UnitTest, ValueMultiplicationByUnitless) {
-	constexpr auto sixKg = 3_kg * Value<Unitless>{2.0f};
+	constexpr auto sixKg = 3_kg * Scalar{2.0f};
 	static_assert(std::is_same_v<std::decay_t<decltype(sixKg)>, Value<Kilograms>>);
 	static_assert(floatEq(sixKg.value<Kilograms>(), 6.0f));
 
 	auto threeTimesTwoKg = 3_kg;
-	threeTimesTwoKg *= Value<Unitless>{2.0f};
+	threeTimesTwoKg *= Scalar{2.0f};
 	EXPECT_FLOAT_EQ(threeTimesTwoKg.value<Kilograms>(), sixKg.value<Kilograms>());
 }
 
@@ -189,12 +189,12 @@ TEST(UnitTest, MassValueMultiplication) {
 }
 
 TEST(UnitTest, ValueDivisionByUnitless) {
-	constexpr auto twoKg = 4_kg / Value<Unitless>{2.0f};
+	constexpr auto twoKg = 4_kg / Scalar{2.0f};
 	static_assert(std::is_same_v<std::decay_t<decltype(twoKg)>, Value<Kilograms>>);
 	static_assert(floatEq(twoKg.value<Kilograms>(), 2.0f));
 
 	auto fourDivTwoKg = 4_kg;
-	fourDivTwoKg /= Value<Unitless>{2.0f};
+	fourDivTwoKg /= Scalar{2.0f};
 	EXPECT_FLOAT_EQ(fourDivTwoKg.value<Kilograms>(), twoKg.value<Kilograms>());
 }
 
@@ -203,13 +203,13 @@ TEST(UnitTest, MassValueDivision) {
 	constexpr auto twoG = 2_g;
 
 	constexpr auto twoThousand = fourKg / twoG;
-	static_assert(floatEq(twoThousand.value<Unitless>(), 2000.0f));
+	static_assert(floatEq(twoThousand.value<Dimensionless>(), 2000.0f));
 }
 
 TEST(UnitTest, PrintsValuesWithUnitSuffix) {
 	auto oss = std::ostringstream{};
 
-	oss << Value<Unitless>{42.0f} << '\n'
+	oss << Scalar{42.0f} << '\n'
 		<< 42_m << '\n'
 		<< 42_km << '\n'
 		<< 42_ms << '\n'
@@ -224,7 +224,7 @@ TEST(UnitTest, PrintsValuesWithUnitSuffix) {
 
 	EXPECT_EQ(
 		oss.str(),
-		"42_Unitless\n"
+		"42\n"
 			"42_m\n"
 			"42_km\n"
 			"42_ms\n"

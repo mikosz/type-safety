@@ -81,10 +81,10 @@ struct Unit final {
 
 using RatioOne = std::ratio<1>;
 
-using Unitless = detail::Unit<0, RatioOne, 0, RatioOne, 0, RatioOne, 0>;
+using Dimensionless = detail::Unit<0, RatioOne, 0, RatioOne, 0, RatioOne, 0>;
 
-std::ostream& operator<<(std::ostream& os, Unitless) {
-	return os << "Unitless";
+std::ostream& operator<<(std::ostream& os, Dimensionless) {
+	return os;
 }
 
 template <class ToKgRatio>
@@ -100,22 +100,22 @@ using Metres = DistanceUnit<RatioOne>;
 using Kilometres = DistanceUnit<std::kilo>;
 
 std::ostream& operator<<(std::ostream& os, Metres) {
-	return os << "m";
+	return os << "_m";
 }
 
 std::ostream& operator<<(std::ostream& os, Kilometres) {
-	return os << "km";
+	return os << "_km";
 }
 
 using Kilograms = MassUnit<RatioOne>;
 using Grams = MassUnit<std::milli>;
 
 std::ostream& operator<<(std::ostream& os, Kilograms) {
-	return os << "kg";
+	return os << "_kg";
 }
 
 std::ostream& operator<<(std::ostream& os, Grams) {
-	return os << "g";
+	return os << "_g";
 }
 
 using Milliseconds = TimeUnit<std::milli>;
@@ -124,19 +124,19 @@ using Minutes = TimeUnit<std::ratio<60>>;
 using Hours = TimeUnit<std::ratio<60 * 60>>;
 
 std::ostream& operator<<(std::ostream& os, Milliseconds) {
-	return os << "ms";
+	return os << "_ms";
 }
 
 std::ostream& operator<<(std::ostream& os, Seconds) {
-	return os << "s";
+	return os << "_s";
 }
 
 std::ostream& operator<<(std::ostream& os, Minutes) {
-	return os << "min";
+	return os << "_min";
 }
 
 std::ostream& operator<<(std::ostream& os, Hours) {
-	return os << "h";
+	return os << "_h";
 }
 
 using MPS = decltype(Metres{} / Seconds{});
@@ -145,19 +145,19 @@ using MPS2 = decltype(MPS{} / Seconds{});
 using Newtons = decltype(Kilograms{} * MPS2{});
 
 std::ostream& operator<<(std::ostream& os, MPS) {
-	return os << "m/s";
+	return os << "_m/s";
 }
 
 std::ostream& operator<<(std::ostream& os, KPH) {
-	return os << "km/h";
+	return os << "_km/h";
 }
 
 std::ostream& operator<<(std::ostream& os, MPS2) {
-	return os << "m/s2";
+	return os << "_m/s2";
 }
 
 std::ostream& operator<<(std::ostream& os, Newtons) {
-	return os << "N";
+	return os << "_N";
 }
 
 template <class UnitType>
@@ -248,8 +248,8 @@ public:
 		return lhs;
 	}
 
-	constexpr Value& operator*=(Value<Unitless> unitless) {
-		value_ *= unitless.value<Unitless>();
+	constexpr Value& operator*=(Value<Dimensionless> unitless) {
+		value_ *= unitless.value<Dimensionless>();
 		return *this;
 	}
 
@@ -259,8 +259,8 @@ public:
 		return Value<UnitProduct>{lhs.value_ * rhs.value<OtherUnit>()};
 	}
 
-	constexpr Value& operator/=(Value<Unitless> unitless) {
-		value_ /= unitless.value<Unitless>();
+	constexpr Value& operator/=(Value<Dimensionless> unitless) {
+		value_ /= unitless.value<Dimensionless>();
 		return *this;
 	}
 
@@ -271,7 +271,7 @@ public:
 	}
 
 	friend std::ostream& operator<<(std::ostream& os, Value value) {
-		return os << value.value_ << "_" << Unit{};
+		return os << value.value_ << Unit{};
 	}
 
 private:
@@ -280,6 +280,7 @@ private:
 
 };
 
+using Scalar = Value<Dimensionless>;
 using Distance = Value<Metres>;
 using Mass = Value<Kilograms>;
 using Time = Value<Seconds>;
