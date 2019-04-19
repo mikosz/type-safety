@@ -291,7 +291,7 @@ class Unit;
 
 ---
 
-The class parameters are instances of the std::ratio template, which is a compile-time representation of rational numbers. The _EXP parameters are exponents for each dimension. Let's define a few aliases:
+The class parameters are instances of the std::ratio template, which is a compile-time representation of rational numbers. The _EXP parameters are exponents for each dimension. Let's define a few aliases to illustrate what they mean:
 
 ---
 
@@ -301,3 +301,108 @@ using Kilograms = Unit<std::ratio<1>, 0, std::ratio<1>, 1, std::ratio<1>, 0>;
 
 ---
 
+Units are convertible when the exponents in all dimensions are equal
+
+---
+
+template <class OtherUnitT>
+static constexpr auto IS_CONVERTIBLE_TO =
+	M_EXP == OtherUnitT::M_EXP
+	&& KG_EXP == OtherUnitT::KG_EXP
+	&& S_EXP == OtherUnitT::S_EXP
+	;
+	
+---
+
+and the conversion ratio is the result of multiplying the ratios divided by each other:
+
+---
+
+template <class OtherUnitT>
+using ConversionRatio =
+	std::ratio_multiply<
+		std::ratio_divide<TO_M_RATIO, typename OtherUnitT::TO_M_RATIO>,
+		std::ratio_multiply<
+			std::ratio_divide<TO_KG_RATIO, typename OtherUnitT::TO_KG_RATIO>,
+			std::ratio_divide<TO_S_RATIO, typename OtherUnitT::TO_S_RATIO>
+		>
+	>
+	;
+	
+---
+
+Unit multiplication is addition of exponents and division - subtraction of exponents:
+
+---
+
+template <class OtherUnitT>
+constexpr auto operator*(OtherUnitT) const {
+	return Unit<
+		std::ratio_multiply<TO_M_RATIO, OtherUnitT::TO_M_RATIO>,
+		M_EXP + OtherUnitT::M_EXP,
+		std::ratio_multiply<TO_KG_RATIO, OtherUnitT::TO_KG_RATIO>,
+		KG_EXP + OtherUnitT::KG_EXP,
+		std::ratio_multiply<TO_S_RATIO, OtherUnitT::TO_S_RATIO>,
+		S_EXP + OtherUnitT::S_EXP
+	>{};
+}
+
+---
+
+We can now define other aliases in terms of these operations:
+
+---
+
+using MPS = decltype(Metres{} / Seconds{}); // yields Unit<std::ratio<1>, 1, std::ratio<1>, 0, std::ratio<1>, -1>;
+using KPH = decltype(Kilometres{} / Hours{}); // yields Unit<std::kilo, 1, std::ratio<1>, 0, std::ratio<1, 3600>, -1>;
+using MPS2 = decltype(MPS{} / Seconds{});
+using Newtons = decltype(Kilograms{} * MPS2{});
+
+---
+
+and aliases for value types in specific units:
+
+---
+
+using Distance = Value<Metres>;
+using Mass = Value<Kilograms>;
+using Time = Value<Seconds>;
+using Speed = Value<MPS>;
+using Acceleration = Value<MPS2>;
+using Force = Value<Newtons>;
+
+---
+
+Or even some absolutely bonkers types:
+
+---
+
+using Pounds = MassUnit<std::ratio<1>, 0, std::ratio<45359, 100000>, 1, std::ratio<1>, 0>;
+
+---
+
+and as a finishing touch create user-defined literals:
+
+---
+
+inline Value<Metres> operator""_m(long double value) {
+	return Value<Metres>{static_cast<float>(value)};
+}
+
+inline Value<Metres> operator""_m(unsigned long long value) {
+	return Value<Metres>{static_cast<float>(value)};
+}
+
+---
+
+Similarly to the Angle class, we can make everything constexpr, provide nice stream-out operators etc.
+
+// ---
+
+SHOW FINAL VERSION OF Unit.hpp, tests and benchmarks, run them, show generated assembly which is identical for floats and Angle (with exception of user-defined literals for VC++), show results of how this affects compilation times.
+
+// *************************************************************************
+
+What we have so far is, in my opinion, pretty cool and nice. Useful, but not groundbreaking, especially not in terms of game-dev.
+
+I would like to show you a different example of leveraging the compiler's capabilities and c++'s type-safety.
