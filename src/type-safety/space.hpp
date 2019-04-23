@@ -13,6 +13,9 @@ constexpr bool SpaceTypesMatch_v =
 template <class FromSpaceT, class ToSpaceT>
 constexpr bool spacesMatch(FromSpaceT, ToSpaceT) {
 	static_assert(
+		// TODO: ignoring space order here makes it impossible for us to crate spaces where it would be
+		// possible to implicitly convert them one way but not another. E.g. PlayerAtFrame should degenerate
+		// to Player, but not the other way round. FIX IT!
 		SpaceTypesMatch_v<FromSpaceT, ToSpaceT> || SpaceTypesMatch_v<ToSpaceT, FromSpaceT>,
 		"Space types don't match"
 		);

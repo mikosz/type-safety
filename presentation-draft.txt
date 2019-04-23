@@ -405,4 +405,60 @@ SHOW FINAL VERSION OF Unit.hpp, tests and benchmarks, run them, show generated a
 
 What we have so far is, in my opinion, pretty cool and nice. Useful, but not groundbreaking, especially not in terms of game-dev.
 
-I would like to show you a different example of leveraging the compiler's capabilities and c++'s type-safety.
+I would like to show you a different example of leveraging the compiler's capabilities and c++'s type-safety. For this we need a bit of context. I'm currently working on a system that needs to move the player character in relation to some objects on the scene. Some data is stored in player space, some in object space, other in animation space (for an animation that can be played on the player), in the end most need to also be moved to world space. There are a lot of possible combinations and because this system is still in development at a pretty fundamental level, we often need to refactor stuff and change our opinion about what space some entities should be stored or processed at.
+Keeping track of what space everything is in is one problem, but making sure you fix everything after changing something is another level. This is because while we can make stuff visible by naming them in a good way, it's hard to follow all possible references and function calls etc.
+Same as reducing all physical values to a float loses too much information for the compiler to be helpful, so is reducing all 3-d transforms to a Matrix type.
+
+Let's see how an Xform class could make sure it's being used in the right context. Xforms normally work in two spaces - a source and target (e.g. a player's "world" matrix is a transform from player to world space). A concatenation of two matrices is only valid if the target space of the left-hand-side transform is the source space of the right-hand-side transform. Such checks could be performed in compile-time if Xform were a template with spaces denoted by template parameters. A simple solution could be:
+
+---
+
+enum class Space {
+	PLAYER,
+	OBJECT,
+	WORLD,
+};
+
+template <Space from, Space to>
+class Xform {
+public:
+
+	Xform(Matrix matrix) : matrix_(std::move(matrix)) {}
+
+	...
+
+	const Matrix& matrix() const { return matrix_; }
+
+private:
+
+	Matrix matrix_;
+
+};
+
+template <Space lhsFrom, Space lhsTo, Space rhsFrom, Space rhsTo>
+auto InSequence(const Xform<lhsFrom, lhsTo>& lhs, const Xform<rhsFrom, rhsTo>& rhs) {
+	static_assert(lhsTo == rhsFrom, "Trying to join two incompatible transforms");
+	return Xform<lhsFrom, rhsTo>{rhs.matrix() * lhs.matrix()};
+}
+
+///
+
+Note also that having a clear InSequence function helps us with the issue of having to remember whether transforms are applied right-to-left or left-to-right in the used engine. These are famously easy to confuse and hard to fix.
+
+For now let's limit ourselves to the Xform type and the InSequence function, but the library obviously provides other functions and types (perhaps two worth mentioning are Point and Vector).
+
+/// ---
+
+Having just an enum tracking the space type has proved extremely useful to us. Introducing it has immediately led us to finding severaly bugs that would be very hard to find otherwise. Changing a transform's space now means just changing its type and fixing compilation errors. In time we've learned that one can add some more features.
+
+* sometimes it may be beneficial to have a "wildcard" space. E.g. one may define a transform that rotates a given space 45 degrees around it's y axis. This transform could be concatenated to any other and keep the spaces the same.
+* in some cases we may want to have some very specialised spaces, e.g. PlayerAtAnimStart. These spaces should implicitly decay to a Player space, but not the other way round.
+* we may want to add runtime data to the spaces. This data could be stored and verified only in some special compilation mode and run only when troubleshooting. E.g. we may want to add a pointer to a gameplay entity to the "Object" space or store a frame number within the player space.
+
+All these could be achieved by replacing the Space enumeration with a type parameter in the example above and providing necessary trait functions to the defined types.
+
+---
+
+
+
+---
