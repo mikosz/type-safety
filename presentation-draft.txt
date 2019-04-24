@@ -436,7 +436,7 @@ private:
 };
 
 template <Space lhsFrom, Space lhsTo, Space rhsFrom, Space rhsTo>
-auto InSequence(const Xform<lhsFrom, lhsTo>& lhs, const Xform<rhsFrom, rhsTo>& rhs) {
+auto inSequence(const Xform<lhsFrom, lhsTo>& lhs, const Xform<rhsFrom, rhsTo>& rhs) {
 	static_assert(lhsTo == rhsFrom, "Trying to join two incompatible transforms");
 	return Xform<lhsFrom, rhsTo>{rhs.matrix() * lhs.matrix()};
 }
@@ -459,6 +459,74 @@ All these could be achieved by replacing the Space enumeration with a type param
 
 ---
 
+namespace space {
 
+struct Player {};
+struct Object {};
+struct World {};
+
+struct PlayerAtFrame : Player {
+#ifdef DO_SPACE_RUNTIME_CHECKS
+	int frameId;
+	
+	explicit PlayerAtFrame(int frameId) : frameId(frameId) {}
+#else
+	explicit PlayerAtFrame([[maybe_unused]] int frameId) {}
+#endif /* DO_SPACE_RUNTIME_CHECKS */
+};
+
+struct Wildcard {};
+
+} // namespace space
+
+template <class FromSpace, class ToSpace>
+constexpr bool SpaceTypesMatch = std::is_same_v<FromSpace, ToSpace> || std::is_convertible_v<FromSpace, ToSpace>;
+
+template <class SpaceT>
+constexpr bool SpaceTypesMatch<space::WildcardSpace, SpaceT> = true;
+
+template <class FromSpace, class ToSpace>
+constexpr bool spacesMatch(FromSpace, ToSpace) {
+	static_assert(SpaceTypesMatch<FromSpace, ToSpace> || SpaceTypesMatch<FromSpaceToSpace>, "Space types don't match");
+	return true;
+}
+
+#ifdef DO_SPACE_RUNTIME_CHECKS
+bool spacesMatch(PlayerAtFrame lhs, PlayerAtFrame rhs) {
+	return lhs.frameId == rhs.frameId;
+}
+#endif /* DO_SPACE_RUNTIME_CHECKS */
 
 ---
+
+We'll also need some cleverness for the Xform class. It won't only need to know the space types (which is easy - that's just template parameters), but will need to have access to runtime data when it exists. If there's no runtime data we don't want the Xform type to hold any additional data. We'll use C++'s Empty Base Optimisation for this. The Xform template will privately derive from CompressedPair type which holds fields only for non-empty types. This way an instance of Xform will have sizeof equal to Matrix as long as the spaces are empty.
+
+---
+
+template <class FromSpace, class ToSpace>
+class Xform : CompressedPair<FromSpace, ToSpace> {
+public:
+
+	template <class... SpaceParams>
+	Xform(Matrix matrix, SpaceParams&&...) :
+		CompressedPair<FromSpace, ToSpace>(std::forward<SpaceParams>(spaceParams)...)
+	{}
+
+	decltype(auto) fromSpace() const { return CompressedPair<FromSpace, ToSpace>::first(); }
+	decltype(auto) toSpace() const { return CompressedPair<FromSpace, ToSpace>::second(); }
+
+	...
+
+};
+
+template <Space lhsFrom, Space lhsTo, Space rhsFrom, Space rhsTo>
+auto inSequence(const Xform<lhsFrom, lhsTo>& lhs, const Xform<rhsFrom, rhsTo>& rhs) {
+	if (!spacesMatch(lhs.toSpace(), rhs.fromSpace())) {
+		assert(!"Run-time spaces don't match");
+	}
+	return Xform<lhsFrom, rhsTo>{rhs.matrix() * lhs.matrix(), lhs.fromSpace(), rhs.toSpace()};
+}
+
+---
+
+When run-time checks are disabled all the extra checking code will get optimised-out and what we're left with is just a multiplication of two matrices. Since the data is stored in the space objects only when run-time checks are on, the memory used is also the same as with a simple matrix. So basically we have pretty good safetly checking for "free".

@@ -28,7 +28,7 @@ struct World {};
 struct Camera {};
 struct Player {};
 
-struct PlayerAtFrame : space::Player {
+struct PlayerAtFrame : Player {
 #ifdef DO_SPACE_RUNTIME_CHECKS
 	int frameId;
 
@@ -37,9 +37,7 @@ struct PlayerAtFrame : space::Player {
 	{
 	}
 #else
-	PlayerAtFrame() = default;
-
-	PlayerAtFrame([[maybe_unused]] int frameId) {
+	explicit PlayerAtFrame([[maybe_unused]] int frameId) {
 	}
 #endif /* DO_SPACE_RUNTIME_CHECKS */
 };

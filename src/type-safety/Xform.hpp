@@ -33,15 +33,6 @@ public:
 		return CompressedPair<FromSpaceT, ToSpaceT>::second();
 	}
 
-	template <class OtherFromSpaceT, class OtherToSpaceT>
-	auto then(const Xform<OtherFromSpaceT, OtherToSpaceT>& other) const {
-		if (!spacesMatch(toSpace(), other.fromSpace())) {
-			assert(!"Run-time spaces don't match");
-		}
-
-		return Xform<FromSpaceT, OtherToSpaceT>{matrix_ * other.matrix(), fromSpace(), other.toSpace()};
-	}
-
 	const Matrix& matrix() const {
 		return matrix_;
 	}
@@ -60,6 +51,15 @@ auto makeXform(FromSpace fromSpace, ToSpace toSpace) {
 template <class FromSpace, class ToSpace>
 auto makeXform(Matrix matrix, FromSpace fromSpace, ToSpace toSpace) {
 	return Xform<FromSpace, ToSpace>{std::move(matrix), std::move(fromSpace), std::move(toSpace)};
+}
+
+template <class LhsFromSpaceT, class LhsToSpaceT, class RhsFromSpaceT, class RhsToSpaceT>
+auto inSequence(const Xform<LhsFromSpaceT, LhsToSpaceT>& lhs, const Xform<RhsFromSpaceT, RhsToSpaceT>& rhs) {
+	if (!spacesMatch(lhs.toSpace(), rhs.fromSpace())) {
+		assert(!"Run-time spaces don't match");
+	}
+
+	return Xform<LhsFromSpaceT, RhsToSpaceT>{rhs.matrix() * lhs.matrix(), lhs.fromSpace(), rhs.toSpace()};
 }
 
 } // namespace type_safety
