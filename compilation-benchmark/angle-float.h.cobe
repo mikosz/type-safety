@@ -1,0 +1,13 @@
+${-1}{#include "angle.${-1}#.h"}E
+
+using Angle = float;
+
+Angle foo$#(Angle a);
+
+inline Angle inlineFoo$#(Angle a) {
+	if (foo(a) > $# * 180.0f/3.14f) {
+		${-1}{return inlineFoo${-1}#(a - 1.57f);}{return a - 1.57f;}E
+	} else {
+		return a + 0.$#f;
+	}
+}

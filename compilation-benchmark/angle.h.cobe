@@ -1,0 +1,13 @@
+#include "type-safety/Angle.h"
+
+${-1}{#include "angle.${-1}#.h"}E
+
+Angle foo$#(Angle a);
+
+inline Angle inlineFoo$#(Angle a) {
+	if (foo(a) > $#_deg) {
+		${-1}{return inlineFoo${-1}#(a - 0.5_pi);}{return a - 0.5_pi;}E
+	} else {
+		return a + 0.$#_rad;
+	}
+}
