@@ -1,4 +1,4 @@
-#include "angle$#.h"
+#include "angle.$#.h"
 
 ${+1}{#include "angle.${+1}#.h"}E
 

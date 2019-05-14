@@ -2,7 +2,7 @@
 
 #include "type-safety/Angle.hpp"
 
-${-1}{#include "angle.${-1}#.h"}E
+${-1}{#include "angle-pch.${-1}#.h"}E
 
 using namespace type_safety;
 using namespace type_safety::angle_literals;
