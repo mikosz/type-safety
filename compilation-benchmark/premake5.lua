@@ -1,3 +1,5 @@
+location "build"
+
 workspace "angle"
 
 	configurations { "Debug", "Release" }
@@ -28,16 +30,16 @@ workspace "angle"
 	project "angle"
 		includedirs "../src"
 		kind "StaticLib"
-		files "angle/*.cpp"
+		files "build/cobe/angle/*.cpp"
 	
 	project "angle-pch"
-		pchheader "angle.pch.h"
-		pchsource "angle.pch.cpp"
+		pchheader "angle/angle.pch.h"
+		pchsource "angle/angle.pch.cpp"
 		includedirs { ".", "../src" }
 		kind "StaticLib"
-		files { "angle-pch/*.cpp", "angle.pch.cpp" }
+		files { "build/cobe/angle-pch/*.cpp", "angle/angle.pch.cpp" }
 	
 	project "angle-float"
 		kind "StaticLib"
-		files "angle-float/*.cpp"
+		files "build/cobe/angle-float/*.cpp"
 	

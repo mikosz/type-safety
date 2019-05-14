@@ -10,9 +10,10 @@ import sys
 import os
 
 def make_filename(template, i):
-	m = re.match("([^\.]+).([^\.]+)\.cobe", template)
+	fn = os.path.basename(template)
+	m = re.match("([^\.]+).([^\.]+)\.cobe", fn)
 	if not m:
-		logging.error("Invalid template '%s' expected format 'NAME.EXT.cobe'", template)
+		logging.error("Invalid template '%s' filename - expected format 'NAME.EXT.cobe'", fn)
 		sys.exit(1)
 	else:
 		return m.group(1) + "." + str(i) + "." + m.group(2)

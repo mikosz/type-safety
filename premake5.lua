@@ -6,7 +6,7 @@ include "googlebenchmark.lua"
 
 ROOT_DIR = path.getabsolute(".")
 
-location "build"	
+location "build"
 
 workspace "type-safety"
 

@@ -34,3 +34,7 @@
 # Build output
 build/
 
+# VS Project files
+.vs/
+*.pyproj
+*.sln
