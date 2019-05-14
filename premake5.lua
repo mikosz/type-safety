@@ -53,7 +53,7 @@ workspace "type-safety"
 	
 	filter "action:vs*"
 		defines { "_SCL_SECURE_NO_WARNINGS" }
-		buildoptions { "/std:c++latest" }
+		buildoptions { "/std:c++17" }
 		defines { "GTEST_LANG_CXX11=1" }
 	filter {}
 

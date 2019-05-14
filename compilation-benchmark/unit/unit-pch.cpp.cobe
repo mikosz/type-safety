@@ -1,0 +1,13 @@
+#include "unit/unit.pch.h"
+
+#include "unit-pch.$#.h"
+
+${+1}{#include "unit-pch.${+1}#.h"}E
+
+Mass getMass$#(Scalar multiplier) {
+	return $#.$#_g * multiplier;
+}
+
+Acceleration getAcceleration$#(Time time) {
+	return ($#.0_mps - 0.$#_kph) / time;
+}

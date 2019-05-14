@@ -1,0 +1,15 @@
+#pragma once
+
+#include "type-safety/Unit.hpp"
+
+${-1}{#include "unit.${-1}#.h"}E
+
+using namespace type_safety;
+using namespace type_safety::unit_literals;
+
+Mass getMass$#(Scalar multiplier);
+Acceleration getAcceleration$#(Time time);
+
+inline Force getForce$#() {
+	return ${-1}{getForce${-1}#() + }E(getMass$#($#.0_kg / 1.0_kg) * getAcceleration$#(0.$#_s));
+}

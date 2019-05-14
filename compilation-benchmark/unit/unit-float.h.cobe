@@ -1,0 +1,16 @@
+#pragma once
+
+${-1}{#include "unit-float.${-1}#.h"}E
+
+using Scalar = float;
+using Time = float;
+using Mass = float;
+using Acceleration = float;
+using Force = float;
+
+Mass getMass$#(Scalar multiplier);
+Acceleration getAcceleration$#(Time time);
+
+inline Force getForce$#() {
+	return ${-1}{getForce${-1}#() + }E(getMass$#($#.0f / 1.0f) * getAcceleration$#(0.$#f));
+}

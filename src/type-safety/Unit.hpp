@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ratio>
-#include <iosfwd>
+#include <iostream>
 
 #include "math.hpp"
 
@@ -76,7 +76,7 @@ struct Unit final {
 
 using Dimensionless = detail::Unit<std::ratio<1>, 0, std::ratio<1>, 0, std::ratio<1>, 0>;
 
-std::ostream& operator<<(std::ostream& os, Dimensionless) {
+inline std::ostream& operator<<(std::ostream& os, Dimensionless) {
 	return os;
 }
 
@@ -92,22 +92,22 @@ using TimeUnit = detail::Unit<std::ratio<1>, 0, std::ratio<1>, 0, ToSRatio, 1>;
 using Metres = DistanceUnit<std::ratio<1>>;
 using Kilometres = DistanceUnit<std::kilo>;
 
-std::ostream& operator<<(std::ostream& os, Metres) {
+inline std::ostream& operator<<(std::ostream& os, Metres) {
 	return os << "_m";
 }
 
-std::ostream& operator<<(std::ostream& os, Kilometres) {
+inline std::ostream& operator<<(std::ostream& os, Kilometres) {
 	return os << "_km";
 }
 
 using Kilograms = MassUnit<std::ratio<1>>;
 using Grams = MassUnit<std::milli>;
 
-std::ostream& operator<<(std::ostream& os, Kilograms) {
+inline std::ostream& operator<<(std::ostream& os, Kilograms) {
 	return os << "_kg";
 }
 
-std::ostream& operator<<(std::ostream& os, Grams) {
+inline std::ostream& operator<<(std::ostream& os, Grams) {
 	return os << "_g";
 }
 
@@ -116,19 +116,19 @@ using Seconds = TimeUnit<std::ratio<1>>;
 using Minutes = TimeUnit<std::ratio<60>>;
 using Hours = TimeUnit<std::ratio<60 * 60>>;
 
-std::ostream& operator<<(std::ostream& os, Milliseconds) {
+inline std::ostream& operator<<(std::ostream& os, Milliseconds) {
 	return os << "_ms";
 }
 
-std::ostream& operator<<(std::ostream& os, Seconds) {
+inline std::ostream& operator<<(std::ostream& os, Seconds) {
 	return os << "_s";
 }
 
-std::ostream& operator<<(std::ostream& os, Minutes) {
+inline std::ostream& operator<<(std::ostream& os, Minutes) {
 	return os << "_min";
 }
 
-std::ostream& operator<<(std::ostream& os, Hours) {
+inline std::ostream& operator<<(std::ostream& os, Hours) {
 	return os << "_h";
 }
 
@@ -137,19 +137,19 @@ using KPH = decltype(Kilometres{} / Hours{});
 using MPS2 = decltype(MPS{} / Seconds{});
 using Newtons = decltype(Kilograms{} * MPS2{});
 
-std::ostream& operator<<(std::ostream& os, MPS) {
+inline std::ostream& operator<<(std::ostream& os, MPS) {
 	return os << "_m/s";
 }
 
-std::ostream& operator<<(std::ostream& os, KPH) {
+inline std::ostream& operator<<(std::ostream& os, KPH) {
 	return os << "_km/h";
 }
 
-std::ostream& operator<<(std::ostream& os, MPS2) {
+inline std::ostream& operator<<(std::ostream& os, MPS2) {
 	return os << "_m/s2";
 }
 
-std::ostream& operator<<(std::ostream& os, Newtons) {
+inline std::ostream& operator<<(std::ostream& os, Newtons) {
 	return os << "_N";
 }
 
@@ -263,7 +263,7 @@ public:
 		return Value<UnitQuotient>{lhs.value_ / rhs.value<OtherUnit>()};
 	}
 
-	friend std::ostream& operator<<(std::ostream& os, Value value) {
+	friend inline std::ostream& operator<<(std::ostream& os, Value value) {
 		return os << value.value_ << Unit{};
 	}
 

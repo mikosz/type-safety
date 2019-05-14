@@ -1,6 +1,6 @@
 location "build"
 
-workspace "angle"
+workspace "compilation-benchmark"
 
 	configurations { "Debug", "Release" }
 	
@@ -43,3 +43,18 @@ workspace "angle"
 		kind "StaticLib"
 		files "build/cobe/angle-float/*.cpp"
 	
+	project "unit"
+		includedirs "../src"
+		kind "StaticLib"
+		files "build/cobe/unit/*.cpp"
+
+	project "unit-pch"
+		pchheader "unit/unit.pch.h"
+		pchsource "unit/unit.pch.cpp"
+		includedirs { ".", "../src" }
+		kind "StaticLib"
+		files { "build/cobe/unit-pch/*.cpp", "unit/unit.pch.cpp" }
+
+	project "unit-float"
+		kind "StaticLib"
+		files "build/cobe/unit-float/*.cpp"

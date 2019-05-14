@@ -1,1 +1,1 @@
-Msbuild.exe angle.sln /p:Configuration=Release /t:angle-float:Rebuild
+Msbuild.exe compilation-benchmark.sln /p:Configuration=Release /t:angle-float:Rebuild
