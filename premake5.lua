@@ -47,7 +47,7 @@ workspace "type-safety"
 	-- Warnings
 	
 	warnings "Extra"
-	flags { "FatalWarnings" }
+	flags { "FatalCompileWarnings" }
 	
 	flags { "MultiProcessorCompile" }
 	
