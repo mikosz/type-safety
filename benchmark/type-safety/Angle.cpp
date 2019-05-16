@@ -47,7 +47,6 @@ void angleArithmetics(benchmark::State& state) {
 	auto i = 0.1_rad;
 	for (auto _ : state) {
 		benchmark::DoNotOptimize(a += i);
-		benchmark::ClobberMemory();
 	}
 }
 
@@ -56,7 +55,6 @@ void floatArithmetics(benchmark::State& state) {
 	auto i = 0.1f;
 	for (auto _ : state) {
 		benchmark::DoNotOptimize(a += i);
-		benchmark::ClobberMemory();
 	}
 }
 

@@ -47,7 +47,7 @@ workspace "type-safety"
 	-- Warnings
 	
 	warnings "Extra"
-	flags { "FatalCompileWarnings" }
+	flags { "FatalWarnings" }
 	
 	flags { "MultiProcessorCompile" }
 	
@@ -55,6 +55,10 @@ workspace "type-safety"
 		defines { "_SCL_SECURE_NO_WARNINGS" }
 		buildoptions { "/std:c++17" }
 		defines { "GTEST_LANG_CXX11=1" }
+		
+		filter "files:**/*AsmComparison.cpp"
+			buildoptions { "/FAs" }
+		
 	filter {}
 
 	structure.header_project("type-safety", "src")
