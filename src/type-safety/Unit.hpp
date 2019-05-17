@@ -173,7 +173,7 @@ public:
     constexpr Value() = default;
 
 	template <class CompatibleUnitT>
-    explicit constexpr Value(CompatibleUnitT unit, float value) :
+    constexpr Value(CompatibleUnitT unit, float value) :
         value_(unit.convertTo<Unit>(value))
     {
     }
