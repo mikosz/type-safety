@@ -4,7 +4,7 @@
 
 ${+1}{#include "unit-pch.${+1}#.h"}E
 
-Mass getMass$#(Scalar multiplier) {
+Mass getMass$#(float multiplier) {
 	return $#.$#_g * multiplier;
 }
 

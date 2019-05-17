@@ -7,9 +7,9 @@ ${-1}{#include "unit.${-1}#.h"}E
 using namespace type_safety;
 using namespace type_safety::unit_literals;
 
-Mass getMass$#(Scalar multiplier);
+Mass getMass$#(float multiplier);
 Acceleration getAcceleration$#(Time time);
 
 inline Force getForce$#() {
-	return ${-1}{getForce${-1}#() + }E(getMass$#($#.0_kg / 1.0_kg) * getAcceleration$#(0.$#_s));
+	return ${-1}{getForce${-1}#() + }E(getMass$#(($#.0_kg / 1.0_kg).value<Dimensionless>()) * getAcceleration$#(0.$#_s));
 }

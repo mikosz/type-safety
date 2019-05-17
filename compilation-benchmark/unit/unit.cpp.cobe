@@ -2,7 +2,7 @@
 
 ${+1}{#include "unit.${+1}#.h"}E
 
-Mass getMass$#(Scalar multiplier) {
+Mass getMass$#(float multiplier) {
 	return $#.$#_g * multiplier;
 }
 
