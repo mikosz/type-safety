@@ -37,7 +37,7 @@ void floatValueConstruction(benchmark::State& state) {
 
 void angleLiteralConstruction(benchmark::State& state) {
 	for (auto _ : state) {
-		auto a = 42_rad;
+		auto a = 42.0_rad;
 		benchmark::DoNotOptimize(a.radians() == 0.0f);
 	}
 }

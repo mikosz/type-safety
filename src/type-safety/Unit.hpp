@@ -70,6 +70,17 @@ struct Unit final {
 		>{};
 	}
 
+	template <class CompatibleUnitT>
+	constexpr float convertTo(float value) const {
+		static_assert(Unit::IS_CONVERTIBLE_TO<CompatibleUnitT>);
+		using Ratio = Unit::ConversionRatio<CompatibleUnitT>;
+		if constexpr (std::ratio_equal_v<Ratio, std::ratio<1, 1>>) {
+			return value;
+		} else {
+			return (static_cast<float>(Ratio::num) / static_cast<float>(Ratio::den)) * value;
+		}
+	}
+
 };
 
 } // namespace detail
@@ -161,8 +172,9 @@ public:
 
     constexpr Value() = default;
 
-    explicit constexpr Value(float value) :
-        value_(std::move(value))
+	template <class CompatibleUnitT>
+    explicit constexpr Value(CompatibleUnitT unit, float value) :
+        value_(unit.convertTo<Unit>(value))
     {
     }
 
@@ -174,13 +186,7 @@ public:
 
     template <class CompatibleUnitT>
     constexpr float value() const {
-        static_assert(Unit::IS_CONVERTIBLE_TO<CompatibleUnitT>);
-        using Ratio = Unit::ConversionRatio<CompatibleUnitT>;
-        if constexpr (std::ratio_equal_v<Ratio, std::ratio<1, 1>>) {
-            return value_;
-        } else {
-			return (static_cast<float>(Ratio::num) / static_cast<float>(Ratio::den)) * value_;
-        }
+		return Unit{}.convertTo<CompatibleUnitT>(value_);
     }
 
 	template <class CompatibleUnitT>
@@ -226,7 +232,7 @@ public:
 	}
 
 	constexpr Value operator-() const {
-		return Value{-value_};
+		return Value{Unit{}, -value_};
 	}
 
 	template <class CompatibleUnitT>
@@ -241,26 +247,42 @@ public:
 		return lhs;
 	}
 
-	constexpr Value& operator*=(Value<Dimensionless> unitless) {
-		value_ *= unitless.value<Dimensionless>();
+	constexpr Value& operator*=(float scalar) {
+		value_ *= scalar;
 		return *this;
 	}
 
 	template <class OtherUnit>
 	friend constexpr auto operator*(Value lhs, Value<OtherUnit> rhs) {
 		using UnitProduct = decltype(decltype(lhs)::Unit{} * decltype(rhs)::Unit{});
-		return Value<UnitProduct>{lhs.value_ * rhs.value<OtherUnit>()};
+		return Value<UnitProduct>{UnitProduct{}, lhs.value_ * rhs.value<OtherUnit>()};
 	}
 
-	constexpr Value& operator/=(Value<Dimensionless> unitless) {
-		value_ /= unitless.value<Dimensionless>();
+	friend constexpr Value operator*(Value v, float scalar) {
+		return Value{Unit{}, v.value_ * scalar};
+	}
+
+	friend constexpr Value operator*(float scalar, Value v) {
+		return Value{Unit{}, v.value_ * scalar};
+	}
+
+	constexpr Value& operator/=(float scalar) {
+		value_ /= scalar;
 		return *this;
 	}
 
 	template <class OtherUnit>
 	friend constexpr auto operator/(Value lhs, Value<OtherUnit> rhs) {
 		using UnitQuotient = decltype(decltype(lhs)::Unit{} / decltype(rhs)::Unit{});
-		return Value<UnitQuotient>{lhs.value_ / rhs.value<OtherUnit>()};
+		return Value<UnitQuotient>{UnitQuotient{}, lhs.value_ / rhs.value<OtherUnit>()};
+	}
+
+	friend constexpr Value operator/(Value v, float scalar) {
+		return Value{Unit{}, v.value_ / scalar};
+	}
+
+	friend constexpr Value operator/(float scalar, Value v) {
+		return Value{Unit{}, v.value_ / scalar};
 	}
 
 	friend inline std::ostream& operator<<(std::ostream& os, Value value) {
@@ -273,7 +295,11 @@ private:
 
 };
 
-using Scalar = Value<Dimensionless>;
+template <class UnitT>
+inline constexpr Value<UnitT> makeValue(float value) {
+	return Value<UnitT>(UnitT{}, value);
+}
+
 using Distance = Value<Metres>;
 using Mass = Value<Kilograms>;
 using Time = Value<Seconds>;
@@ -288,99 +314,99 @@ static_assert(sizeof(Distance) == sizeof(float));
 namespace unit_literals {
 
 inline constexpr Value<Metres> operator""_m(long double value) {
-	return Value<Metres>{static_cast<float>(value)};
+	return Value<Metres>{Metres{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Metres> operator""_m(unsigned long long value) {
-	return Value<Metres>{static_cast<float>(value)};
+	return Value<Metres>{Metres{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Metres> operator""_km(long double value) {
-	return Value<Kilometres>{static_cast<float>(value)};
+	return Value<Kilometres>{Kilometres{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Kilometres> operator""_km(unsigned long long value) {
-	return Value<Kilometres>{static_cast<float>(value)};
+	return Value<Kilometres>{Kilometres{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Kilograms> operator""_kg(long double value) {
-	return Value<Kilograms>{static_cast<float>(value)};
+	return Value<Kilograms>{Kilograms{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Kilograms> operator""_kg(unsigned long long value) {
-	return Value<Kilograms>{static_cast<float>(value)};
+	return Value<Kilograms>{Kilograms{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Grams> operator""_g(long double value) {
-	return Value<Grams>{static_cast<float>(value)};
+	return Value<Grams>{Grams{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Grams> operator""_g(unsigned long long value) {
-	return Value<Grams>{static_cast<float>(value)};
+	return Value<Grams>{Grams{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Milliseconds> operator""_ms(long double value) {
-	return Value<Milliseconds>{static_cast<float>(value)};
+	return Value<Milliseconds>{Milliseconds{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Milliseconds> operator""_ms(unsigned long long value) {
-	return Value<Milliseconds>{static_cast<float>(value)};
+	return Value<Milliseconds>{Milliseconds{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Seconds> operator""_s(long double value) {
-	return Value<Seconds>{static_cast<float>(value)};
+	return Value<Seconds>{Seconds{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Seconds> operator""_s(unsigned long long value) {
-	return Value<Seconds>{static_cast<float>(value)};
+	return Value<Seconds>{Seconds{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Minutes> operator""_min(long double value) {
-	return Value<Minutes>{static_cast<float>(value)};
+	return Value<Minutes>{Minutes{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Minutes> operator""_min(unsigned long long value) {
-	return Value<Minutes>{static_cast<float>(value)};
+	return Value<Minutes>{Minutes{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Hours> operator""_h(long double value) {
-	return Value<Hours>{static_cast<float>(value)};
+	return Value<Hours>{Hours{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Hours> operator""_h(unsigned long long value) {
-	return Value<Hours>{static_cast<float>(value)};
+	return Value<Hours>{Hours{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<MPS> operator""_mps(long double value) {
-	return Value<MPS>{static_cast<float>(value)};
+	return Value<MPS>{MPS{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<MPS> operator""_mps(unsigned long long value) {
-	return Value<MPS>{static_cast<float>(value)};
+	return Value<MPS>{MPS{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<KPH> operator""_kph(long double value) {
-	return Value<KPH>{static_cast<float>(value)};
+	return Value<KPH>{KPH{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<KPH> operator""_kph(unsigned long long value) {
-	return Value<KPH>{static_cast<float>(value)};
+	return Value<KPH>{KPH{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<MPS2> operator""_mps2(long double value) {
-	return Value<MPS2>{static_cast<float>(value)};
+	return Value<MPS2>{MPS2{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<MPS2> operator""_mps2(unsigned long long value) {
-	return Value<MPS2>{static_cast<float>(value)};
+	return Value<MPS2>{MPS2{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Newtons> operator""_N(long double value) {
-	return Value<Newtons>{static_cast<float>(value)};
+	return Value<Newtons>{Newtons{}, static_cast<float>(value)};
 }
 
 inline constexpr Value<Newtons> operator""_N(unsigned long long value) {
-	return Value<Newtons>{static_cast<float>(value)};
+	return Value<Newtons>{Newtons{}, static_cast<float>(value)};
 }
 
 } // namespace unit_literals

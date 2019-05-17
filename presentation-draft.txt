@@ -189,7 +189,7 @@ SHOW FINAL VERSION OF Angle.hpp, tests and benchmarks, run them, show generated 
 
 Now we have a pretty neat implementation of an Angle class. There are however many other dimensions (distance, mass, time), which could be raised to a power (distance^2 => area) and should work with each other yielding even more complicated types (distance / time^2 => acceleration). Writing all this code would mean a lot of typing and duplicated code. Thankfully we have templates to the rescue.
 
-I'm going to show you an implementation inspired by a class proposed by Biarne Stroustrup in an article (LINK TO ARTICLE). There is an even more ambitious implementation in Boost, that allows the creation of multiple sets of unit types, but this is perhaps overkill (LINK TO BOOST LIB).
+I'm going to show you an implementation inspired by a class proposed by Bjarne Stroustrup in an article (LINK TO ARTICLE). There is an even more ambitious implementation in Boost, that allows the creation of multiple sets of unit types, but this is perhaps overkill (LINK TO BOOST LIB).
 
 We're going to limit ourselves to three dimensions: distance, mass and time. Adding more is pretty straightforward and probably unnecessary.
 

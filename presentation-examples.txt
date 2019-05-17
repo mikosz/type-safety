@@ -1,0 +1,25 @@
+SETUP
+-----
+
+* Unit Benchmarks commented out
+* Angle Bencharks uncommented
+* Visual instance running with type-safety.sln, benchmark set to start-up project, ReleaseStatic version
+* Another Visual instance running with compilation-benchmark.sln
+* Developer Command Prompt running in compilation-benchmark/build
+
+Angle "free" example
+--------------------
+
+* Show Angle.hpp
+* show benchmark/Angle.cpp
+* run benchmark, show that times for float and angle are the same
+* open AngleAsmComparison.cpp, compile it and open AngleAsmComparison.asm. Show that callFloats and callAngles are the same. Mention that when looked at debug version one of the functions actually got removed
+* switch to debug
+* run benchmark, show that angle is slower than float
+* open AngleAsmComparison.cpp, compile it and open AngleAsmComparison.asm. Mention that functions are no longer inlined
+* open compilation-benchmark, show angle and angle-float code
+* open dev command prompt, run:
+** Msbuild.exe compilation-benchmark.sln /p:Configuration=Release /t:angle-float:Rebuild
+** Msbuild.exe compilation-benchmark.sln /p:Configuration=Release /t:angle:Rebuild
+** Msbuild.exe compilation-benchmark.sln /p:Configuration=Release /t:angle-pch:Rebuild
+

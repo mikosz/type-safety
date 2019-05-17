@@ -12,7 +12,7 @@ using Tonnes = MassUnit<std::kilo>;
 using Pounds = MassUnit<std::ratio<45359, 100000>>;
 
 TEST(UnitTest, DistanceCompatibleTypeConversion) {
-    constexpr auto distance = Value<Metres>{2.1f};
+    constexpr auto distance = makeValue<Metres>(2.1f);
 
 	constexpr auto ms = Value<Metres>{distance};
     static_assert(floatEq(ms.value<Kilometres>(), 0.0021f));
@@ -24,7 +24,7 @@ TEST(UnitTest, DistanceCompatibleTypeConversion) {
 }
 
 TEST(UnitTest, MassCompatibleTypeConversion) {
-    constexpr auto mass = Value<Kilograms>{2.1f};
+    constexpr auto mass = makeValue<Kilograms>(2.1f);
 
 	constexpr auto kgs = Value<Kilograms>{mass};
     static_assert(floatEq(kgs.value<Tonnes>(), 0.0021f));
@@ -41,12 +41,12 @@ TEST(UnitTest, MassCompatibleTypeConversion) {
 	static_assert(floatEq(gs.value<Kilograms>(), 2.1f));
 	static_assert(floatEq(gs.value<Grams>(), 2100.0f));
 
-	constexpr auto lbs = Value<Pounds>{2.2046f};
+	constexpr auto lbs = makeValue<Pounds>(2.2046f);
 	static_assert(floatEq(lbs.value<Kilograms>(), 1.0f));
 }
 
 TEST(UnitTest, TimeCompatibleTypeConversion) {
-    constexpr auto time = Value<Seconds>{2.1f};
+    constexpr auto time = makeValue<Seconds>(2.1f);
 
 	constexpr auto secs = Value<Hours>{time};
     static_assert(floatEq(secs.value<Hours>(), 2.1f / (60.0f * 60.0f)));
@@ -139,12 +139,12 @@ TEST(UnitTest, ValueSubtraction) {
 }
 
 TEST(UnitTest, ValueMultiplicationByUnitless) {
-	constexpr auto sixKg = 3_kg * Scalar{2.0f};
+	constexpr auto sixKg = 3_kg * 2.0f;
 	static_assert(std::is_same_v<std::decay_t<decltype(sixKg)>, Value<Kilograms>>);
 	static_assert(floatEq(sixKg.value<Kilograms>(), 6.0f));
 
 	auto threeTimesTwoKg = 3_kg;
-	threeTimesTwoKg *= Scalar{2.0f};
+	threeTimesTwoKg *= 2.0f;
 	EXPECT_FLOAT_EQ(threeTimesTwoKg.value<Kilograms>(), sixKg.value<Kilograms>());
 }
 
@@ -187,12 +187,12 @@ TEST(UnitTest, MassValueMultiplication) {
 }
 
 TEST(UnitTest, ValueDivisionByUnitless) {
-	constexpr auto twoKg = 4_kg / Scalar{2.0f};
+	constexpr auto twoKg = 4_kg / 2.0f;
 	static_assert(std::is_same_v<std::decay_t<decltype(twoKg)>, Value<Kilograms>>);
 	static_assert(floatEq(twoKg.value<Kilograms>(), 2.0f));
 
 	auto fourDivTwoKg = 4_kg;
-	fourDivTwoKg /= Scalar{2.0f};
+	fourDivTwoKg /= 2.0f;
 	EXPECT_FLOAT_EQ(fourDivTwoKg.value<Kilograms>(), twoKg.value<Kilograms>());
 }
 
@@ -207,8 +207,7 @@ TEST(UnitTest, MassValueDivision) {
 TEST(UnitTest, PrintsValuesWithUnitSuffix) {
 	auto oss = std::ostringstream{};
 
-	oss << Scalar{42.0f} << '\n'
-		<< 42_m << '\n'
+	oss << 42_m << '\n'
 		<< 42_km << '\n'
 		<< 42_ms << '\n'
 		<< 42_s << '\n'
@@ -222,8 +221,7 @@ TEST(UnitTest, PrintsValuesWithUnitSuffix) {
 
 	EXPECT_EQ(
 		oss.str(),
-		"42\n"
-			"42_m\n"
+		"42_m\n"
 			"42_km\n"
 			"42_ms\n"
 			"42_s\n"
@@ -265,6 +263,19 @@ TEST(UnitTest, ValueComparison) {
 	static_assert(3_N >= 2_N);
 	static_assert(2_N >= 2_N);
 	static_assert(!(2_N >= 3_N));
+}
+
+TEST(UnitTest, EarthGravitationalAcceleration) {
+	constexpr auto R = 6.371_m; // * 10^6
+	constexpr auto R_sq = R * R; // * 10^12
+	constexpr auto M = 5.972_kg; // * 10^24
+	using GUnit = decltype((Metres{} * Metres{} * Metres{}) / (Kilograms{} * Seconds{} * Seconds{}));
+	constexpr auto G = makeValue<GUnit>(6.674f); // * 10^-11
+
+	constexpr auto g = 10.0f * G * M / R_sq;
+
+	static_assert((g - Acceleration{MPS2{}, 9.81f}).value<MPS2>() < 0.01f);
+	static_assert((g - Acceleration{MPS2{}, 9.81f}).value<MPS2>() > -0.01f);
 }
 
 } // anonymous namespace

@@ -23,22 +23,22 @@ void floatDefaultConstruction(benchmark::State& state) {
 
 void unitValueConstruction(benchmark::State& state) {
 	for (auto _ : state) {
-		auto m = Mass{ 42.0f };
-		benchmark::DoNotOptimize(m.value<Kilograms>() == 0.0f);
+		auto m = Mass{ Kilograms{}, 42.0f };
+		benchmark::DoNotOptimize(m.value<Kilograms>() != 0.0f);
 	}
 }
 
 void floatValueConstruction(benchmark::State& state) {
 	for (auto _ : state) {
 		auto m = 42.0f;
-		benchmark::DoNotOptimize(m == 0.0f);
+		benchmark::DoNotOptimize(m != 0.0f);
 	}
 }
 
 void unitLiteralConstruction(benchmark::State& state) {
 	for (auto _ : state) {
-		auto m = 42_kg;
-		benchmark::DoNotOptimize(m.value<Kilograms>() == 0.0f);
+		auto m = 42.0_kg;
+		benchmark::DoNotOptimize(m.value<Kilograms>() != 0.0f);
 	}
 }
 
