@@ -1,0 +1,287 @@
+#include <utility>
+#include <iostream>
+
+namespace type_safety {
+
+#ifdef _FLOAT_EQ_EPSILON
+constexpr const auto FLOAT_EQ_EPSILON = _FLOAT_EQ_EPSILON;
+#else
+constexpr const auto FLOAT_EQ_EPSILON = 0.0001f;
+#endif /* _FLOAT_EQ_EPSILON */
+
+constexpr auto PI = 3.141592f;
+
+inline constexpr bool floatLT(float lhs, float rhs) {
+    return lhs < rhs - FLOAT_EQ_EPSILON;
+}
+
+constexpr bool floatLE(float lhs, float rhs) {
+    return lhs <= rhs + FLOAT_EQ_EPSILON;
+}
+
+constexpr bool floatGT(float lhs, float rhs) {
+    return lhs > rhs + FLOAT_EQ_EPSILON;
+}
+
+constexpr bool floatGE(float lhs, float rhs) {
+    return lhs >= rhs - FLOAT_EQ_EPSILON;
+}
+
+constexpr bool floatEq(float lhs, float rhs) {
+    return floatLE(lhs, rhs) && floatGE(lhs, rhs);
+}
+
+constexpr bool floatNE(float lhs, float rhs) {
+    return floatLT(lhs, rhs) || floatLT(rhs, lhs);
+}
+
+template <int exp>
+constexpr float pow([[maybe_unused]] float value) {
+    if constexpr (exp == 0) {
+        return 1.0f;
+    } else if constexpr (exp > 0) {
+        return value * pow<exp - 1>(value);
+    } else {
+        return (1.0f / value) * pow<exp + 1>(value);
+    }
+}
+
+} // namespace type_safety
+
+namespace type_safety {
+
+struct RadiansTag {
+    constexpr RadiansTag() = default;
+};
+constexpr const auto radiansTag = RadiansTag{};
+
+struct PiFactorTag {
+    constexpr PiFactorTag() = default;
+};
+constexpr const auto piFactorTag = PiFactorTag{};
+
+struct DegreesTag {
+    constexpr DegreesTag() = default;
+};
+constexpr const auto degreesTag = DegreesTag{};
+
+class Angle final {
+public:
+
+    constexpr Angle() = default;
+
+    constexpr Angle(RadiansTag, float r) :
+        radians_(std::move(r))
+    {
+    }
+
+    constexpr Angle(PiFactorTag, float piFactor) :
+        radians_(piFactor * PI)
+    {
+    }
+
+    constexpr Angle(DegreesTag, float d) :
+        radians_(d * DEGREES_TO_RADIANS_)
+    {
+    }
+
+    constexpr float degrees() const {
+        return radians_ * RADIANS_TO_DEGREES_;
+    }
+
+    constexpr float radians() const {
+        return radians_;
+    }
+
+    friend constexpr bool operator==(Angle lhs, Angle rhs) {
+        return floatEq(lhs.radians_, rhs.radians_);
+    }
+
+    friend constexpr bool operator!=(Angle lhs, Angle rhs) {
+        return floatNE(lhs.radians_, rhs.radians_);
+    }
+
+    friend constexpr bool operator<(Angle lhs, Angle rhs) {
+        return floatLT(lhs.radians_, rhs.radians_);
+    }
+
+    friend constexpr bool operator<=(Angle lhs, Angle rhs) {
+        return floatLE(lhs.radians_, rhs.radians_);
+    }
+
+    friend constexpr bool operator>(Angle lhs, Angle rhs) {
+        return floatGT(lhs.radians_, rhs.radians_);
+    }
+
+    friend constexpr bool operator>=(Angle lhs, Angle rhs) {
+        return floatGE(lhs.radians_, rhs.radians_);
+    }
+
+    constexpr Angle& operator+=(Angle a) {
+        radians_ += a.radians_;
+        return *this;
+    }
+
+    friend constexpr Angle operator+(Angle lhs, Angle rhs) {
+        return Angle{std::move(lhs)} += rhs;
+    }
+
+    constexpr Angle& operator-=(Angle a) {
+        radians_ -= a.radians_;
+        return *this;
+    }
+
+    friend constexpr Angle operator-(Angle lhs, Angle rhs) {
+        return Angle{std::move(lhs)} -= rhs;
+    }
+
+    friend constexpr Angle operator-(Angle a) {
+        return Angle{radiansTag, -a.radians_};
+    }
+
+	constexpr Angle& operator*=(float scalar) {
+		radians_ *= scalar;
+		return *this;
+	}
+
+	friend constexpr Angle operator*(Angle a, float scalar) {
+		return Angle{std::move(a)} *= scalar;
+	}
+
+	friend constexpr Angle operator*(float scalar, Angle a) {
+		return Angle{std::move(a)} *= scalar;
+	}
+
+	constexpr Angle& operator/=(float scalar) {
+		radians_ /= scalar;
+		return *this;
+	}
+
+	friend constexpr Angle operator/(Angle a, float scalar) {
+		return Angle{std::move(a)} /= scalar;
+	}
+
+	friend std::ostream& operator<<(std::ostream& os, Angle a) {
+        return os << a.degrees() << "_deg";
+    }
+
+private:
+
+    static constexpr auto DEGREES_TO_RADIANS_ = PI / 180.0f;
+    static constexpr auto RADIANS_TO_DEGREES_ = 180.0f / PI;
+
+    float radians_ = 0.0f;
+
+};
+
+static_assert(sizeof(Angle) == sizeof(float));
+
+namespace angle_literals {
+
+inline constexpr Angle operator""_deg(long double d) {
+    return Angle{degreesTag, static_cast<float>(d)};
+}
+
+inline constexpr Angle operator""_deg(unsigned long long d) {
+    return Angle{degreesTag, static_cast<float>(d)};
+}
+
+inline constexpr Angle operator""_rad(long double r) {
+    return Angle{radiansTag, static_cast<float>(r)};
+}
+
+inline constexpr Angle operator""_rad(unsigned long long r) {
+    return Angle{radiansTag, static_cast<float>(r)};
+}
+
+inline constexpr Angle operator""_pi(long double piFactor) {
+    return Angle{piFactorTag, static_cast<float>(piFactor)};
+}
+
+inline constexpr Angle operator""_pi(unsigned long long piFactor) {
+    return Angle{piFactorTag, static_cast<float>(piFactor)};
+}
+
+} // namespace angle_literals
+
+} // namespace type_safety
+
+using namespace type_safety;
+using namespace type_safety::angle_literals;
+
+float externalAngleSink(Angle pitch, Angle yaw, Angle roll);
+float externalAngleFloatSink(float pitch, float yaw, float roll);
+
+namespace angle_test {
+
+struct RotationAngles {
+	Angle pitch = 0.0_rad;
+	Angle yaw = 0.0_rad;
+	Angle roll = 0.0_rad;
+};
+
+struct ActorAngles {
+
+	RotationAngles rotation;
+
+	void rotate(Angle pitch, Angle yaw, Angle roll) {
+		rotation.pitch += pitch;
+		rotation.yaw += yaw;
+		rotation.roll += roll;
+	}
+
+};
+
+ActorAngles rotationExampleAngles() {
+	auto actor = ActorAngles{};
+	actor.rotate(0.42_rad, 0.0_rad, 0.0_rad);
+	actor.rotate(0.0_rad, 3.14_rad, 0.0_rad);
+	actor.rotate(0.0_rad, 0.0_rad, 2.71_rad);
+	return actor;
+}
+
+float callAngles(Angle a) {
+	const auto actorAngles = rotationExampleAngles();
+	return externalAngleSink(
+		actorAngles.rotation.pitch + a,
+		actorAngles.rotation.yaw,
+		actorAngles.rotation.roll
+	);
+}
+
+struct RotationFloats {
+	float pitch = 0.0f;
+	float yaw = 0.0f;
+	float roll = 0.0f;
+};
+
+struct ActorFloats {
+
+	RotationFloats rotation;
+
+	void rotate(float pitch, float yaw, float roll) {
+		rotation.pitch += pitch;
+		rotation.yaw += yaw;
+		rotation.roll += roll;
+	}
+
+};
+
+ActorFloats rotationExampleFloats() {
+	auto actor = ActorFloats{};
+	actor.rotate(0.42f, 0.0f, 0.0f);
+	actor.rotate(0.0f, 3.14f, 0.0f);
+	actor.rotate(0.0f, 0.0f, 2.71f);
+	return actor;
+}
+
+float callFloats(float f) {
+	const auto actorFloats = rotationExampleFloats();
+	return externalAngleFloatSink(
+		actorFloats.rotation.pitch + f,
+		actorFloats.rotation.yaw,
+		actorFloats.rotation.roll
+	);
+}
+
+} // namespace angle_test
