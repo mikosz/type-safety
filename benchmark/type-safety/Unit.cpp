@@ -60,12 +60,12 @@ void floatArithmetics(benchmark::State& state) {
 	}
 }
 
-BENCHMARK(unitDefaultConstruction);
-BENCHMARK(floatDefaultConstruction);
-BENCHMARK(unitValueConstruction);
-BENCHMARK(floatValueConstruction);
-BENCHMARK(unitLiteralConstruction);
-BENCHMARK(unitArithmetics);
-BENCHMARK(floatArithmetics);
+//BENCHMARK(unitDefaultConstruction);
+//BENCHMARK(floatDefaultConstruction);
+//BENCHMARK(unitValueConstruction);
+//BENCHMARK(floatValueConstruction);
+//BENCHMARK(unitLiteralConstruction);
+//BENCHMARK(unitArithmetics);
+//BENCHMARK(floatArithmetics);
 
 } // anonymous namespace

@@ -1,7 +1,7 @@
 #pragma once
 
 // Comment me out to disable space runtime checks
-#define DO_SPACE_RUNTIME_CHECKS
+// #define DO_SPACE_RUNTIME_CHECKS
 
 namespace type_safety {
 
@@ -37,7 +37,9 @@ struct PlayerAtFrame : Player {
 	{
 	}
 #else
-	explicit PlayerAtFrame([[maybe_unused]] int frameId) {
+	constexpr PlayerAtFrame() = default;
+
+	constexpr explicit PlayerAtFrame([[maybe_unused]] int frameId) {
 	}
 #endif /* DO_SPACE_RUNTIME_CHECKS */
 };

@@ -6,6 +6,8 @@ SETUP
 * Visual instance running with type-safety.sln, benchmark set to start-up project, ReleaseStatic version
 * Another Visual instance running with compilation-benchmark.sln
 * Developer Command Prompt running in compilation-benchmark/build
+* Notepad++ with both ASMComparison files open
+* Godbolt with listings loaded
 
 Angle "free" example
 --------------------
@@ -22,4 +24,14 @@ Angle "free" example
 ** Msbuild.exe compilation-benchmark.sln /p:Configuration=Release /t:angle-float:Rebuild
 ** Msbuild.exe compilation-benchmark.sln /p:Configuration=Release /t:angle:Rebuild
 ** Msbuild.exe compilation-benchmark.sln /p:Configuration=Release /t:angle-pch:Rebuild
+
+Unit "free" example
+-------------------
+
+* Show Unit.hpp
+* show test/Unit.cpp EarthGravitationalAcceleration (bottom)
+* comment-out Angle benchmark, uncomment Unit benchmark
+* run benchmark for both release and debug
+* open UnitAsmComparison, compile it
+
 

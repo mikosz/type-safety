@@ -3,10 +3,12 @@
 using namespace type_safety;
 using namespace type_safety::angle_literals;
 
+float externalAngleSink(Angle pitch, Angle yaw, Angle roll);
+float externalAngleFloatSink(float pitch, float yaw, float roll);
+
+namespace angle_test {
+
 struct RotationAngles {
-	// NOTE: on VisualStudio changing this to 0.0_rad does not yield the same code as in the floats version,
-	// as some ops are actually performed on initialisation. Why?
-	// Clang optimises everything away just fine.
 	Angle pitch = 0.0_rad;
 	Angle yaw = 0.0_rad;
 	Angle roll = 0.0_rad;
@@ -32,14 +34,12 @@ ActorAngles rotationExampleAngles() {
 	return actor;
 }
 
-void externalAngleSink(float pitch, float yaw, float roll);
-
-void callAngles() {
+float callAngles(Angle a) {
 	const auto actorAngles = rotationExampleAngles();
-	externalAngleSink(
-		actorAngles.rotation.pitch.radians(),
-		actorAngles.rotation.yaw.radians(),
-		actorAngles.rotation.roll.radians()
+	return externalAngleSink(
+		actorAngles.rotation.pitch + a,
+		actorAngles.rotation.yaw,
+		actorAngles.rotation.roll
 	);
 }
 
@@ -69,11 +69,13 @@ ActorFloats rotationExampleFloats() {
 	return actor;
 }
 
-void callFloats() {
+float callFloats(float f) {
 	const auto actorFloats = rotationExampleFloats();
-	externalAngleSink(
-		actorFloats.rotation.pitch,
+	return externalAngleFloatSink(
+		actorFloats.rotation.pitch + f,
 		actorFloats.rotation.yaw,
 		actorFloats.rotation.roll
 	);
 }
+
+} // namespace angle_test

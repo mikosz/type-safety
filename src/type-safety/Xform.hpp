@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <stdexcept>
 
 #include "CompressedPair.hpp"
 #include "Matrix.hpp"
@@ -44,19 +45,23 @@ private:
 };
 
 template <class FromSpace, class ToSpace>
-auto makeXform(FromSpace fromSpace, ToSpace toSpace) {
+inline auto makeXform(FromSpace fromSpace, ToSpace toSpace) {
 	return Xform<FromSpace, ToSpace>{std::move(fromSpace), std::move(toSpace)};
 }
 
 template <class FromSpace, class ToSpace>
-auto makeXform(Matrix matrix, FromSpace fromSpace, ToSpace toSpace) {
+inline auto makeXform(Matrix matrix, FromSpace fromSpace, ToSpace toSpace) {
 	return Xform<FromSpace, ToSpace>{std::move(matrix), std::move(fromSpace), std::move(toSpace)};
 }
 
 template <class LhsFromSpaceT, class LhsToSpaceT, class RhsFromSpaceT, class RhsToSpaceT>
-auto inSequence(const Xform<LhsFromSpaceT, LhsToSpaceT>& lhs, const Xform<RhsFromSpaceT, RhsToSpaceT>& rhs) {
+inline auto inSequence(
+	const Xform<LhsFromSpaceT, LhsToSpaceT>& lhs,
+	const Xform<RhsFromSpaceT, RhsToSpaceT>& rhs
+)
+{
 	if (!spacesMatch(lhs.toSpace(), rhs.fromSpace())) {
-		assert(!"Run-time spaces don't match");
+		throw std::runtime_error("Run-time spaces don't match");
 	}
 
 	return Xform<LhsFromSpaceT, RhsToSpaceT>{rhs.matrix() * lhs.matrix(), lhs.fromSpace(), rhs.toSpace()};

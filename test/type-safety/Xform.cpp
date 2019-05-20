@@ -67,7 +67,7 @@ TEST(XformTest, CanOverrideRuntimeSpaceMatching) {
 TEST(XformTest, AssertsWhenRuntimeDataDoesntMatch) {
 	auto worldToPlayerAt3 = makeXform(space::World{}, space::PlayerAtFrame{3});
 	auto playerAt2ToPlayer = makeXform(space::PlayerAtFrame{2}, space::Player{});
-	EXPECT_DEATH(inSequence(worldToPlayerAt3, playerAt2ToPlayer), "Run-time spaces don't match");
+	EXPECT_THROW(inSequence(worldToPlayerAt3, playerAt2ToPlayer), std::runtime_error);
 }
 #endif /* DO_SPACE_RUNTIME_CHECKS */
 
