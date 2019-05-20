@@ -1,7 +1,7 @@
 #pragma once
 
 // Comment me out to disable space runtime checks
-// #define DO_SPACE_RUNTIME_CHECKS
+#define DO_SPACE_RUNTIME_CHECKS
 
 namespace type_safety {
 
@@ -57,5 +57,19 @@ struct WildcardSpace {
 
 template <class SpaceT>
 constexpr bool SpaceTypesMatch_v<space::WildcardSpace, SpaceT> = true;
+
+template <class LhsSpaceT, class RhsSpaceT>
+inline void checkSpacesMatch(
+	[[maybe_unused]] const LhsSpaceT& lhs,
+	[[maybe_unused]] const RhsSpaceT& rhs
+) {
+#ifdef DO_SPACE_RUNTIME_CHECKS
+	if (!spacesMatch(lhs, rhs)) {
+		throw std::runtime_error("Run-time spaces don't match");
+	}
+#else
+	static_assert(spacesMatch(LhsSpaceT{}, RhsSpaceT{}), "Space types don't match");
+#endif /* DO_SPACE_RUNTIME_CHECKS */
+}
 
 } // namespace type_safety

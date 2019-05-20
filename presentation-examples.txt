@@ -1,7 +1,7 @@
 SETUP
 -----
 
-* Unit Benchmarks commented out
+* Unit and Xform Benchmarks commented out
 * Angle Bencharks uncommented
 * Visual instance running with type-safety.sln, benchmark set to start-up project, ReleaseStatic version
 * Another Visual instance running with compilation-benchmark.sln
@@ -34,4 +34,10 @@ Unit "free" example
 * run benchmark for both release and debug
 * open UnitAsmComparison, compile it
 
+Xform example
+-------------
 
+* Show Space.hpp, Xform.hpp
+* comment-out Unit benchmark, uncomment Xform benchmark
+* run benchmark for both release and debug for both DO_SPACE_RUNTIME_CHECKS and not (space.hpp:4)
+* show xform on godbolt, show that assembly is the same

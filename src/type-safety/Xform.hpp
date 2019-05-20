@@ -5,6 +5,7 @@
 
 #include "CompressedPair.hpp"
 #include "Matrix.hpp"
+#include "Point.hpp"
 #include "space.hpp"
 
 namespace type_safety {
@@ -24,6 +25,16 @@ public:
 		CompressedPair<FromSpaceT, ToSpaceT>(std::forward<SpaceParams>(spaceParams)...),
 		matrix_(std::move(matrix))
 	{
+	}
+
+	Point<ToSpaceT> apply(const Point<FromSpaceT>& p) const {
+		checkSpacesMatch(fromSpace(), p.space())
+		return Point<ToSpaceT>{matrix_ * p.vector(), toSpace()};
+	}
+
+	Vector<ToSpaceT> apply(const Vector<FromSpaceT>& v) const {
+		checkSpacesMatch(fromSpace(), v.space());
+		return Vector<ToSpaceT>{matrix_ * v.vector(), toSpace()};
 	}
 
 	decltype(auto) fromSpace() const {
@@ -58,12 +69,8 @@ template <class LhsFromSpaceT, class LhsToSpaceT, class RhsFromSpaceT, class Rhs
 inline auto inSequence(
 	const Xform<LhsFromSpaceT, LhsToSpaceT>& lhs,
 	const Xform<RhsFromSpaceT, RhsToSpaceT>& rhs
-)
-{
-	if (!spacesMatch(lhs.toSpace(), rhs.fromSpace())) {
-		throw std::runtime_error("Run-time spaces don't match");
-	}
-
+) {
+	checkSpacesMatch(lhs.toSpace(), rhs.fromSpace());
 	return Xform<LhsFromSpaceT, RhsToSpaceT>{rhs.matrix() * lhs.matrix(), lhs.fromSpace(), rhs.toSpace()};
 }
 

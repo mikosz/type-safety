@@ -2,7 +2,7 @@
 
 #include <array>
 
-#include "Vec4.hpp"
+#include "VecN.hpp"
 
 namespace type_safety {
 
@@ -13,12 +13,11 @@ public:
 		auto result = Matrix{};
 		for (auto row = 0u; row < 4u; ++row) {
 			for (auto col = 0u; col < 4u; ++col) {
+				auto value = 0.0f;
 				for (auto dot = 0u; dot < 4u; ++dot) {
-					result.elements_[index(row, col)] =
-						lhs.elements_[index(row, dot)] *
-						rhs.elements_[index(dot, col)]
-						;
+					value += lhs.elements_[index(row, dot)] * rhs.elements_[index(dot, col)];
 				}
+				result.elements_[index(row, col)] = value;
 			}
 		}
 		return result;

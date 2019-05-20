@@ -3,6 +3,7 @@
 #include <ctime>
 
 #include "type-safety/Xform.hpp"
+#include "type-safety/VecN.hpp"
 
 namespace /* anonymous */ {
 
@@ -15,6 +16,15 @@ Matrix randomMatrix() {
 		for (auto col = 0u; col < 4u; ++col) {
 			result.get(row, col) = static_cast<float>(std::rand());
 		}
+	}
+	return result;
+}
+
+Vec3 randomVec3() {
+	std::srand(0);
+	auto result = Vec3{};
+	for (auto i = 0u; i < 3u; ++i) {
+		result.get(i) = static_cast<float>(std::rand());
 	}
 	return result;
 }
@@ -51,8 +61,39 @@ void runtimeCheckXformConcatenation(benchmark::State& state) {
 	}
 }
 
+void matrixVectorMultiplication(benchmark::State& state) {
+	const auto m = randomMatrix();
+	const auto v = Vec4{randomVec3(), 1.0f};
+
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(m * v);
+	}
+}
+
+void noRuntimeCheckVectorTransform(benchmark::State& state) {
+	const auto x = Xform<space::World, space::Player>{randomMatrix()};
+	const auto v = Vector<space::World>{randomVec3()};
+
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(x.apply(v));
+	}
+}
+
+void runtimeCheckVectorTransform(benchmark::State& state) {
+	const auto x = Xform<space::PlayerAtFrame, space::World>{
+		randomMatrix(), space::PlayerAtFrame{31}, space::World{}};
+	const auto v = Vector<space::PlayerAtFrame>{randomVec3(), space::PlayerAtFrame{31}};
+
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(x.apply(v));
+	}
+}
+
 BENCHMARK(matrixMultiplication);
 BENCHMARK(noRuntimeCheckXformConcatenation);
 BENCHMARK(runtimeCheckXformConcatenation);
+BENCHMARK(matrixVectorMultiplication);
+BENCHMARK(noRuntimeCheckVectorTransform);
+BENCHMARK(runtimeCheckVectorTransform);
 
 } // anonymous namespace

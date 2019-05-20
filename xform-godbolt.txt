@@ -1,0 +1,345 @@
+#include <type_traits>
+#include <stdexcept>
+#include <array>
+#include <ctime>
+
+namespace type_safety {
+
+class Vec4 {
+public:
+
+	float get(size_t idx) const {
+		return elements_[idx];
+	}
+
+	float& get(size_t idx) {
+		return elements_[idx];
+	}
+
+private:
+
+	std::array<float, 4> elements_;
+
+};
+
+} // namespace type_safety
+
+
+namespace type_safety {
+
+class Matrix {
+public:
+
+	friend Matrix operator*(const Matrix& lhs, const Matrix& rhs) {
+		/* auto result = Matrix{};
+		for (auto row = 0u; row < 4u; ++row) {
+			for (auto col = 0u; col < 4u; ++col) {
+				auto value = 0.0f;
+				for (auto dot = 0u; dot < 4u; ++dot) {
+					value += lhs.elements_[index(row, dot)] * rhs.elements_[index(dot, col)];
+				}
+				result.elements_[index(row, col)] = value;
+			}
+		}
+		return result; */
+
+        auto result = Matrix{};
+        result.elements_[0] = lhs.elements_[0] + rhs.elements_[0];
+        return result;
+	}
+
+	friend Vec4 operator*(const Matrix& lhs, const Vec4& rhs) {
+		auto result = Vec4{};
+		for (auto row = 0u; row < 4u; ++row) {
+			auto value = 0.0f;
+			for (auto col = 0u; col < 4u; ++col) {
+				value += lhs.get(row, col) * rhs.get(col);
+			}
+			result.get(row) = value;
+		}
+		return result;
+	}
+
+	Matrix& operator*=(const Matrix& other) {
+		auto result = *this * other;
+		*this = result;
+		return *this;
+	}
+
+	float& get(size_t row, size_t column) {
+		return elements_[index(row, column)];
+	}
+
+	const float get(size_t row, size_t column) const {
+		return elements_[index(row, column)];
+	}
+
+private:
+
+	std::array<float, 16> elements_;
+
+	static size_t index(size_t row, size_t column) {
+		return row * 4u + column;
+	}
+
+};
+
+} // namespace type_safety
+
+
+// Comment me out to disable space runtime checks
+// #define DO_SPACE_RUNTIME_CHECKS
+
+namespace type_safety {
+
+template <class FromSpaceT, class ToSpaceT>
+constexpr bool SpaceTypesMatch_v =
+	std::is_same_v<FromSpaceT, ToSpaceT> ||
+	std::is_convertible_v<FromSpaceT, ToSpaceT>;
+
+template <class FromSpaceT, class ToSpaceT>
+constexpr bool spacesMatch(FromSpaceT, ToSpaceT) {
+	static_assert(
+		// TODO: ignoring space order here makes it impossible for us to crate spaces where it would be
+		// possible to implicitly convert them one way but not another. E.g. PlayerAtFrame should degenerate
+		// to Player, but not the other way round. FIX IT!
+		SpaceTypesMatch_v<FromSpaceT, ToSpaceT> || SpaceTypesMatch_v<ToSpaceT, FromSpaceT>,
+		"Space types don't match"
+		);
+	return true;
+}
+
+namespace space {
+
+struct World {};
+struct Camera {};
+struct Player {};
+
+struct PlayerAtFrame : Player {
+#ifdef DO_SPACE_RUNTIME_CHECKS
+	int frameId;
+
+	explicit PlayerAtFrame(int frameId) :
+		frameId(frameId)
+	{
+	}
+#else
+	constexpr PlayerAtFrame() = default;
+
+	constexpr explicit PlayerAtFrame([[maybe_unused]] int frameId) {
+	}
+#endif /* DO_SPACE_RUNTIME_CHECKS */
+};
+
+#ifdef DO_SPACE_RUNTIME_CHECKS
+bool spacesMatch(PlayerAtFrame lhs, PlayerAtFrame rhs) {
+	return lhs.frameId == rhs.frameId;
+}
+#endif /* DO_SPACE_RUNTIME_CHECKS */
+
+struct WildcardSpace {
+};
+
+} // namespace space
+
+template <class SpaceT>
+constexpr bool SpaceTypesMatch_v<space::WildcardSpace, SpaceT> = true;
+
+} // namespace type_safety
+
+
+#include <type_traits>
+
+namespace type_safety {
+
+namespace detail {
+
+template <class FirstT, class SecondT>
+constexpr auto BOTH_EMPTY = std::is_empty_v< FirstT> && std::is_empty_v< SecondT>;
+
+template <class FirstT, class SecondT>
+constexpr auto NEITHER_EMPTY = !std::is_empty_v< FirstT> && !std::is_empty_v< SecondT>;
+
+template <class FirstT, class SecondT>
+constexpr auto ONE_EMPTY = !BOTH_EMPTY<FirstT, SecondT> && !NEITHER_EMPTY<FirstT, SecondT>;
+
+template <class FirstT, class SecondT>
+using NonEmptyT = std::conditional_t<!std::is_empty_v<FirstT>, FirstT, SecondT>;
+
+template <class FirstT, class SecondT>
+auto getNonempty([[maybe_unused]] FirstT first, [[maybe_unused]] SecondT second) {
+	if constexpr (!std::is_empty_v<FirstT>) {
+		return std::move(first);
+	} else {
+		return std::move(second);
+	}
+}
+
+} // namespace detail
+
+template <class FirstT, class SecondT, class = void>
+struct CompressedPair;
+
+template <class FirstT, class SecondT>
+struct CompressedPair<FirstT, SecondT, std::enable_if_t<detail::BOTH_EMPTY<FirstT, SecondT>>> {
+
+	constexpr CompressedPair() = default;
+
+	CompressedPair(FirstT, SecondT) {
+	}
+
+	constexpr FirstT first() const {
+		return FirstT{};
+	}
+
+	constexpr SecondT second() const {
+		return SecondT{};
+	}
+
+};
+
+template <class FirstT, class SecondT>
+class CompressedPair<FirstT, SecondT, std::enable_if_t<detail::NEITHER_EMPTY<FirstT, SecondT>>> {
+public:
+
+	CompressedPair() = default;
+
+	CompressedPair(FirstT first, SecondT second) :
+		first_(std::move(first)),
+		second_(std::move(second))
+	{
+	}
+
+	const FirstT& first() const {
+		return first_;
+	}
+
+	const SecondT& second() const {
+		return second_;
+	}
+
+private:
+
+	FirstT first_;
+
+	SecondT second_;
+
+};
+
+template <class FirstT, class SecondT>
+class CompressedPair<FirstT, SecondT, std::enable_if_t<detail::ONE_EMPTY<FirstT, SecondT>>> {
+public:
+
+	CompressedPair() = default;
+
+	CompressedPair(FirstT first, SecondT second) :
+		stored_(detail::getNonempty(std::move(first), std::move(second)))
+	{
+	}
+
+	decltype(auto) first() const {
+		if constexpr (!std::is_empty_v<FirstT>) {
+			return static_cast<const FirstT&>(stored_);
+		} else {
+			return FirstT{};
+		}
+	}
+
+	decltype(auto) second() const {
+		if constexpr (!std::is_empty_v<SecondT>) {
+			return static_cast<const SecondT&>(stored_);
+		} else {
+			return SecondT{};
+		}
+	}
+
+private:
+
+	using Stored = detail::NonEmptyT<FirstT, SecondT>;
+
+	Stored stored_;
+
+};
+
+} // namespace type_safety
+
+
+namespace type_safety {
+
+template <class FromSpaceT, class ToSpaceT>
+class Xform : CompressedPair<FromSpaceT, ToSpaceT> {
+public:
+
+	template <class... SpaceParams>
+	Xform(SpaceParams&&... spaceParams) :
+		CompressedPair<FromSpaceT, ToSpaceT>(std::forward<SpaceParams>(spaceParams)...)
+	{
+	}
+
+	template <class... SpaceParams>
+	Xform(Matrix matrix, SpaceParams&&... spaceParams) :
+		CompressedPair<FromSpaceT, ToSpaceT>(std::forward<SpaceParams>(spaceParams)...),
+		matrix_(std::move(matrix))
+	{
+	}
+
+	decltype(auto) fromSpace() const {
+		return CompressedPair<FromSpaceT, ToSpaceT>::first();
+	}
+
+	decltype(auto) toSpace() const {
+		return CompressedPair<FromSpaceT, ToSpaceT>::second();
+	}
+
+	const Matrix& matrix() const {
+		return matrix_;
+	}
+
+private:
+
+	Matrix matrix_;
+
+};
+
+template <class FromSpace, class ToSpace>
+inline auto makeXform(FromSpace fromSpace, ToSpace toSpace) {
+	return Xform<FromSpace, ToSpace>{std::move(fromSpace), std::move(toSpace)};
+}
+
+template <class FromSpace, class ToSpace>
+inline auto makeXform(Matrix matrix, FromSpace fromSpace, ToSpace toSpace) {
+	return Xform<FromSpace, ToSpace>{std::move(matrix), std::move(fromSpace), std::move(toSpace)};
+}
+
+template <class LhsFromSpaceT, class LhsToSpaceT, class RhsFromSpaceT, class RhsToSpaceT>
+inline auto inSequence(
+	const Xform<LhsFromSpaceT, LhsToSpaceT>& lhs,
+	const Xform<RhsFromSpaceT, RhsToSpaceT>& rhs
+)
+{
+	if (!spacesMatch(lhs.toSpace(), rhs.fromSpace())) {
+		throw std::runtime_error("Run-time spaces don't match");
+	}
+
+	return Xform<LhsFromSpaceT, RhsToSpaceT>{rhs.matrix() * lhs.matrix(), lhs.fromSpace(), rhs.toSpace()};
+}
+
+Matrix matrixMultiplication(const Matrix& lhs, const Matrix& rhs) {
+	return lhs * rhs;
+}
+
+Xform<space::World, space::Camera> noRuntimeCheckXformConcatenation(
+const Xform<space::World, space::Player>& lhs,
+const  Xform<space::Player, space::Camera>& rhs
+) {
+	return inSequence(lhs, rhs);
+}
+
+auto runtimeCheckXformConcatenation(
+    const Xform<space::World, space::PlayerAtFrame>& lhs,
+    const Xform<space::PlayerAtFrame, space::Camera>& rhs
+) {
+	return inSequence(lhs, rhs);
+}
+
+} // namespace type_safety
