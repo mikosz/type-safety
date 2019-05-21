@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FILES=100
+FILES=10
 
 cobe-generator/cobe_generator.py angle/angle.cpp.cobe angle/angle.h.cobe -o build/cobe/angle -n $FILES
 cobe-generator/cobe_generator.py angle/angle-pch.cpp.cobe angle/angle-pch.h.cobe -o build/cobe/angle-pch -n $FILES

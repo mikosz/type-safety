@@ -16,12 +16,12 @@ TEST(AngleTest, CreateFromDegrees) {
     constexpr auto radians = 2.154609f;
     constexpr auto angleFromConstructor = Angle{degreesTag, degrees};
     constexpr auto angleFromLiteral = 123.45_deg;
-    constexpr auto integralAngleFromLiteral = 123_deg;
+    constexpr auto integralAngleFromLiteral = -123_deg;
 
     static_assert(floatEq(angleFromConstructor.degrees(), degrees));
     static_assert(floatEq(angleFromConstructor.radians(), radians));
     static_assert(floatEq(angleFromLiteral.degrees(), degrees));
-    static_assert(floatEq(integralAngleFromLiteral.degrees(), 123.0f));
+    static_assert(floatEq(integralAngleFromLiteral.degrees(), -123.0f));
 }
 
 TEST(AngleTest, CreateFromRadians) {

@@ -93,11 +93,11 @@ void runtimeCheckVectorTransform(benchmark::State& state) {
 	}
 }
 
-BENCHMARK(matrixMultiplication);
-BENCHMARK(noRuntimeCheckXformConcatenation);
-BENCHMARK(runtimeCheckXformConcatenation);
-BENCHMARK(matrixVectorMultiplication);
-BENCHMARK(noRuntimeCheckVectorTransform);
-BENCHMARK(runtimeCheckVectorTransform);
+//BENCHMARK(matrixMultiplication);
+//BENCHMARK(noRuntimeCheckXformConcatenation);
+//BENCHMARK(runtimeCheckXformConcatenation);
+//BENCHMARK(matrixVectorMultiplication);
+//BENCHMARK(noRuntimeCheckVectorTransform);
+//BENCHMARK(runtimeCheckVectorTransform);
 
 } // anonymous namespace

@@ -79,12 +79,12 @@ void floatArithmetics(benchmark::State& state) {
 	}
 }
 
-//BENCHMARK(angleDefaultConstruction);
-//BENCHMARK(floatDefaultConstruction);
-//BENCHMARK(angleValueConstruction);
-//BENCHMARK(floatValueConstruction);
-//BENCHMARK(angleLiteralConstruction);
-//BENCHMARK(angleArithmetics);
-//BENCHMARK(floatArithmetics);
+BENCHMARK(angleDefaultConstruction);
+BENCHMARK(floatDefaultConstruction);
+BENCHMARK(angleValueConstruction);
+BENCHMARK(floatValueConstruction);
+BENCHMARK(angleLiteralConstruction);
+BENCHMARK(angleArithmetics);
+BENCHMARK(floatArithmetics);
 
 } // anonymous namespace
