@@ -79,7 +79,7 @@ inline auto inSequence(
 	const Xform<RhsFromSpaceT, RhsToSpaceT>& rhs
 ) {
 	checkSpacesMatch(lhs.toSpace(), rhs.fromSpace());
-	auto result = Xform<LhsFromSpaceT, RhsToSpaceT>{};
+	auto result = Xform<LhsFromSpaceT, RhsToSpaceT>{lhs.fromSpace(), rhs.toSpace()};
 	multiplyAndSet(result.matrix(), rhs.matrix(), lhs.matrix());
 	return result;
 }

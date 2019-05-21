@@ -1,0 +1,19 @@
+#pragma once
+
+#include "type-safety/Xform.hpp"
+
+${-1}{#include "xform-pch.${-1}#.h"}E
+
+using namespace type_safety;
+
+Xform<space::PlayerAtFrame, space::World> getPlayerToWorld$#();
+Xform<space::Camera, space::Camera> getCameraMotion$#();
+
+inline Xform<space::PlayerAtFrame, space::Camera> getPlayerToCamera$#(
+	const Xform<space::World, space::Camera>& worldToCamera
+) {
+	return inSequence(
+		inSequence(getPlayerToWorld$#(), worldToCamera),
+		getCameraMotion${-1}{${-1}#}{$#}E()
+	);
+}

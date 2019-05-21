@@ -1,0 +1,14 @@
+#pragma once
+
+#include "type-safety/Matrix.hpp"
+
+${-1}{#include "xform-matrix.${-1}#.h"}E
+
+using namespace type_safety;
+
+Matrix getPlayerToWorld$#();
+Matrix getCameraMotion$#();
+
+inline Matrix getPlayerToCamera$#(const Matrix& worldToCamera) {
+	return getCameraMotion${-1}{${-1}#}{$#}E() * worldToCamera * getPlayerToWorld$#();
+}

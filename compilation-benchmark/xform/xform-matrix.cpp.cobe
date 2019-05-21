@@ -1,0 +1,11 @@
+#include "xform-matrix.$#.h"
+
+${+1}{#include "xform-matrix.${+1}#.h"}E
+
+Matrix getPlayerToWorld$#() {
+	return Matrix{};
+}
+
+Matrix getCameraMotion$#() {
+	return ${+1}{getCameraMotion${+1}#}{Matrix}E();
+}

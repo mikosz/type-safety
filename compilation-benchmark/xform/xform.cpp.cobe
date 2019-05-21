@@ -1,0 +1,11 @@
+#include "xform.$#.h"
+
+${+1}{#include "xform.${+1}#.h"}E
+
+Xform<space::PlayerAtFrame, space::World> getPlayerToWorld$#() {
+	return makeXform(space::PlayerAtFrame{$#}, space::World{});
+}
+
+Xform<space::Camera, space::Camera> getCameraMotion$#() {
+	return ${+1}{getCameraMotion${+1}#}{Xform<space::Camera, space::Camera>}E();
+}

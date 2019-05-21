@@ -58,3 +58,28 @@ workspace "compilation-benchmark"
 	project "unit-float"
 		kind "StaticLib"
 		files "build/cobe/unit-float/*.cpp"
+
+	project "xform"
+		includedirs "../src"
+		kind "StaticLib"
+		files "build/cobe/xform/*.cpp"
+
+	project "xform-pch"
+		pchheader "xform/xform.pch.h"
+		pchsource "xform/xform.pch.cpp"
+		includedirs { ".", "../src" }
+		kind "StaticLib"
+		files { "build/cobe/xform-pch/*.cpp", "xform/xform.pch.cpp" }
+
+	project "xform-matrix"
+		includedirs "../src"
+		kind "StaticLib"
+		files "build/cobe/xform-matrix/*.cpp"
+
+	project "xform-matrix-pch"
+		pchheader "xform/xform-matrix.pch.h"
+		pchsource "xform/xform-matrix.pch.cpp"
+		includedirs { ".", "../src" }
+		kind "StaticLib"
+		files { "build/cobe/xform-matrix-pch/*.cpp", "xform/xform-matrix.pch.cpp" }
+		

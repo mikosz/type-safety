@@ -1,0 +1,13 @@
+#include "xform/xform-matrix.pch.h"
+
+#include "xform-matrix-pch.$#.h"
+
+${+1}{#include "xform-matrix-pch.${+1}#.h"}E
+
+Matrix getPlayerToWorld$#() {
+	return Matrix{};
+}
+
+Matrix getCameraMotion$#() {
+	return ${+1}{getCameraMotion${+1}#}{Matrix}E();
+}
