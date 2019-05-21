@@ -28,13 +28,17 @@ public:
 	}
 
 	Point<ToSpaceT> apply(const Point<FromSpaceT>& p) const {
-		checkSpacesMatch(fromSpace(), p.space())
-		return Point<ToSpaceT>{matrix_ * p.vector(), toSpace()};
+		checkSpacesMatch(fromSpace(), p.space());
+		auto result = Point<ToSpaceT>{toSpace()};
+		multiplyAndSet(result.vector(), matrix_, p.vector());
+		return result;
 	}
 
 	Vector<ToSpaceT> apply(const Vector<FromSpaceT>& v) const {
 		checkSpacesMatch(fromSpace(), v.space());
-		return Vector<ToSpaceT>{matrix_ * v.vector(), toSpace()};
+		auto result = Vector<ToSpaceT>{toSpace()};
+		multiplyAndSet(result.vector(), matrix_, v.vector());
+		return result;
 	}
 
 	decltype(auto) fromSpace() const {
@@ -43,6 +47,10 @@ public:
 
 	decltype(auto) toSpace() const {
 		return CompressedPair<FromSpaceT, ToSpaceT>::second();
+	}
+
+	Matrix& matrix() {
+		return matrix_;
 	}
 
 	const Matrix& matrix() const {
@@ -71,7 +79,9 @@ inline auto inSequence(
 	const Xform<RhsFromSpaceT, RhsToSpaceT>& rhs
 ) {
 	checkSpacesMatch(lhs.toSpace(), rhs.fromSpace());
-	return Xform<LhsFromSpaceT, RhsToSpaceT>{rhs.matrix() * lhs.matrix(), lhs.fromSpace(), rhs.toSpace()};
+	auto result = Xform<LhsFromSpaceT, RhsToSpaceT>{};
+	multiplyAndSet(result.matrix(), rhs.matrix(), lhs.matrix());
+	return result;
 }
 
 } // namespace type_safety

@@ -7,6 +7,9 @@
 
 namespace type_safety {
 
+template <class FromSpaceT, class ToSpaceT>
+class Xform;
+
 template <class SpaceT>
 class Vector : SpaceT {
 public:
@@ -40,6 +43,10 @@ public:
 		}
 	}
 
+	Vec4& vector() {
+		return vector_;
+	}
+
 	const Vec4& vector() const {
 		return vector_;
 	}
@@ -61,7 +68,7 @@ public:
 	}
 
 	template <class... SpaceParams>
-	Point(const Vec3& v, SpaceParams&&... spaceParams) :
+	Point(Vec3 v, SpaceParams&&... spaceParams) :
 		SpaceT(std::forward<SpaceParams>(spaceParams)...),
 		vector_(v, 1.0f)
 	{
@@ -81,6 +88,10 @@ public:
 		} else {
 			return static_cast<const SpaceT&>(*this);
 		}
+	}
+
+	Vec4& vector() {
+		return vector_;
 	}
 
 	const Vec4& vector() const {

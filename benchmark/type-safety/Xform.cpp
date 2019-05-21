@@ -12,11 +12,15 @@ using namespace type_safety;
 Matrix randomMatrix() {
 	std::srand(0);
 	auto result = Matrix{};
-	for (auto row = 0u; row < 4u; ++row) {
+	for (auto row = 0u; row < 3u; ++row) {
 		for (auto col = 0u; col < 4u; ++col) {
 			result.get(row, col) = static_cast<float>(std::rand());
 		}
 	}
+	result.get(3, 0) = 0.0f;
+	result.get(3, 1) = 0.0f;
+	result.get(3, 2) = 0.0f;
+	result.get(3, 3) = 1.0f;
 	return result;
 }
 
@@ -72,7 +76,7 @@ void matrixVectorMultiplication(benchmark::State& state) {
 
 void noRuntimeCheckVectorTransform(benchmark::State& state) {
 	const auto x = Xform<space::World, space::Player>{randomMatrix()};
-	const auto v = Vector<space::World>{randomVec3()};
+	const auto v = Point<space::World>{randomVec3()};
 
 	for (auto _ : state) {
 		benchmark::DoNotOptimize(x.apply(v));

@@ -9,8 +9,7 @@ namespace type_safety {
 class Matrix {
 public:
 
-	friend Matrix operator*(const Matrix& lhs, const Matrix& rhs) {
-		auto result = Matrix{};
+	friend void multiplyAndSet(Matrix& result, const Matrix& lhs, const Matrix& rhs) {
 		for (auto row = 0u; row < 4u; ++row) {
 			for (auto col = 0u; col < 4u; ++col) {
 				auto value = 0.0f;
@@ -20,11 +19,9 @@ public:
 				result.elements_[index(row, col)] = value;
 			}
 		}
-		return result;
 	}
 
-	friend Vec4 operator*(const Matrix& lhs, const Vec4& rhs) {
-		auto result = Vec4{};
+	friend void multiplyAndSet(Vec4& result, const Matrix& lhs, const Vec4& rhs) {
 		for (auto row = 0u; row < 4u; ++row) {
 			auto value = 0.0f;
 			for (auto col = 0u; col < 4u; ++col) {
@@ -32,6 +29,17 @@ public:
 			}
 			result.get(row) = value;
 		}
+	}
+
+	friend Matrix operator*(const Matrix& lhs, const Matrix& rhs) {
+		auto result = Matrix{};
+		multiplyAndSet(result, lhs, rhs);
+		return result;
+	}
+
+	friend Vec4 operator*(const Matrix& lhs, const Vec4& rhs) {
+		auto result = Vec4{};
+		multiplyAndSet(result, lhs, rhs);
 		return result;
 	}
 
