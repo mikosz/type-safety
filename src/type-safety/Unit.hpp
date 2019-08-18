@@ -102,6 +102,7 @@ using TimeUnit = detail::Unit<std::ratio<1>, 0, std::ratio<1>, 0, ToSRatio, 1>;
 
 using Metres = DistanceUnit<std::ratio<1>>;
 using Kilometres = DistanceUnit<std::kilo>;
+using Milimetres = DistanceUnit<std::milli>;
 
 inline std::ostream& operator<<(std::ostream& os, Metres) {
 	return os << "_m";
